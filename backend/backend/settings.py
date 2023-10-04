@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,6 +17,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'colorfield',
+    'rest_framework.authtoken',
+    'djoser',
+    'import_export',
+    'users.apps.UsersConfig',
+    'recipes.apps.RecipesConfig',
+    'api.v1.apps.ApiConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -70,7 +79,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'UTC'
 
@@ -83,3 +92,56 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'users.User'
+
+#-------------------------
+# Recipes константы
+#-------------------------
+
+COLORFIELD_LENGTH:int = 7
+INGREDIENT_LENGTH: int = 200
+RECIPE_NAME_LENGTH:int = 200
+TAG_LENGTH:int = 200
+
+MIN_COOKING_TIME:int = 1
+MAX_COOKING_TIME:int = 1440
+
+#-------------------------
+# Users константы
+#-------------------------
+
+EMAIL_LENGTH: int = 254
+NAME_LENGTH:int = 150
+ROLE_LENGTH: int = 20
+USERNAME_LENGTH: int = 150
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+DJOSER = {
+    'LOGIN_FIELD': 'email',  # поле, используемое для авторизации (вместо стандартного 'username')
+    'HIDE_USERS': False,
+    # 'USER_CREATE_PASSWORD_RETYPE': True,  # требовать повторного ввода пароля при регистрации
+
+    'SERIALIZERS': {
+                                      # UserSerializer
+        'user': 'api.v1.serializers.UserSerializer',
+        'user_create': 'api.v1.serializers.UserSerializer',
+        'current_user': 'api.v1.serializers.UserSerializer',
+        'token': 'djoser.serializers.TokenSerializer',  # указание используемого сериалайзера для токена
+        'set_password': 'djoser.serializers.SetPasswordSerializer',
+    },
+
+    'PERMISSIONS': {
+        'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
+        'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+    },
+}
