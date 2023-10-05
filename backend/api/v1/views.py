@@ -2,46 +2,27 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 
 from api.v1.pagination import CustomPagination
 from api.v1.permissions import IsAuthenticated, IsAdminOrReadOnly
-from api.v1.serializers import UserSerializer, SubscriptionSerializer, \
-    TagSerializer, RecipeSerializer, IngredientSerializer
-from recipes.models import Tag, Recipe, Ingredient
+from api.v1.serializers import UserSerializer, \
+    TagSerializer, IngredientSerializer, RecipeReadSerializer, \
+    RecipePostSerializer, ShortRecipeReadSerializer
+from recipes.models import Tag, Recipe, Ingredient, ShoppingCart, Favorite
 from users.models import User, Subscription
 
 
 class CustomUserViewSet(UserViewSet):
-    """Работа с пользователями. Регистрация пользователей,
-     Вывод пользователей. У авторизованных пользователей возможность подписки.
-     Djoser позволяет переходить по endpoints user и токена"""
+    """"""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     #permission_classes = (IsAdminOrReadOnly,)
     link_model = Subscription
 
-    def get_patch_me(self, request):
-        user = get_object_or_404(User, username=self.request.user)
-        if request.method == 'GET':
-            serializer = UserSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == 'PATCH':
-            serializer = UserSerializer(
-                user, data=request.data, partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class SubscriptionViewSet(viewsets.ModelViewSet):
-    queryset = Subscription.objects.all()
-    serializer_class = SubscriptionSerializer
-    permission_classes = (IsAdminOrReadOnly,)
 
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -52,8 +33,59 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.select_related('author')
-    serializer_class = RecipeSerializer
+    #serializer_class = RecipeSerializer
+
     permission_classes = (AllowAny,)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return RecipeReadSerializer
+        return RecipePostSerializer
+
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=(IsAuthenticated,),
+    )
+    def favorite(self, request, pk):
+        """"""
+        if request.method == 'POST':
+            return self.add_recipe(Favorite, request.user, pk)
+        if request.method == 'DELETE':
+            return self.delete_recipe(Favorite, request.user, pk)
+
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=(IsAuthenticated,),
+    )
+    def shopping_cart(self, request, pk):
+        """"""
+        if request.method == 'POST':
+            return self.add_recipe(ShoppingCart, request.user, pk)
+        if request.method == 'DELETE':
+            return self.delete_recipe(ShoppingCart, request.user, pk)
+
+    def add_recipe(self, model, user, pk):
+        """"""
+
+        recipe = get_object_or_404(Recipe, id=pk)
+        model.objects.create(user=user, recipe=recipe)
+        serializer = ShortRecipeReadSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete_recipe(self, model, user, pk):
+        """"""
+        try:
+            obj = model.objects.get(user=user, recipe__id=pk)
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except model.DoesNotExist:
+            return Response({'errors': 'Такого рецепта не существует!'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class IngredientsViewSet(viewsets.ModelViewSet):

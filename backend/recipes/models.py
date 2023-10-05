@@ -9,14 +9,28 @@ from users.models import User
 
 
 class Ingredient(models.Model):
-    """Ингредиент.
-    Один ингредиент может быть у многих рецептов."""
+    """
+    Модель ингредиента для рецепта. Один ингредиент может быть у многих рецептов.
+
+    Поля:
+    - name (CharField): Название ингредиента для рецепта.
+    - measurement_unit (CharField): Единица измерения для ингредиента.
+
+    Мета:
+    - verbose_name (str): Название модели в единственном числе.
+    - verbose_name_plural (str): Название модели во множественном числе.
+    - ordering (list): Сортировка объектов модели по умолчанию.
+
+    Методы:
+    - __str__(): Возвращает строковое представление ингредиента в формате "Название, Единица измерения".
+
+    """
     name = models.CharField(
         verbose_name='Название ингредиента для рецепта',
         max_length=INGREDIENT_LENGTH
     )
     measurement_unit = models.CharField(
-        verbose_name='Единица измерения',
+        verbose_name='Единица измерения ингредиента',
         max_length=INGREDIENT_LENGTH
     )
 
@@ -51,7 +65,8 @@ class Tag(models.Model):
         validators=[
             RegexValidator(
                 regex=r'^[-a-zA-Z0-9_]+$',
-                message='Slug должен содержать только буквы (строчные и заглавные), цифры, дефисы и подчеркивания.',
+                message=(f'Slug должен содержать только буквы (строчные и '
+                         f'заглавные), цифры, дефисы и подчеркивания.'),
                 code='invalid_slug'
             )
         ]
@@ -60,7 +75,7 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
-        ordering = ['id']
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -83,21 +98,8 @@ class Recipe(models.Model):
         Ingredient,
         related_name='recipes',
         verbose_name='Ингредиенты блюда',
-        through='recipes.IngredientInRecipe'
+        through='recipes.RecipeEssentials'
     )
-    """
-    is_favorite = models.BooleanField(
-        verbose_name='В избранном',
-        # required=True,
-        default=False,
-        help_text='Для теста пока что'
-    )
-    is_in_shopping_cart = models.BooleanField(
-        verbose_name='В списке покупок',
-        # required=True,
-        default=False,
-    )
-    """
     name = models.CharField(
         verbose_name='Название рецепта',
         max_length=RECIPE_NAME_LENGTH,
@@ -121,10 +123,12 @@ class Recipe(models.Model):
         verbose_name='Время приготовления',
         help_text='Введите время приготовления',
         validators=[
-            MinValueValidator(MIN_COOKING_TIME, message=f'Время приготовления должно '
-                                                        f'быть не менее {MIN_COOKING_TIME} мин.'),
-            MaxValueValidator(MAX_COOKING_TIME, message=f'Время приготовления должно '
-                                                        f'быть не более {MAX_COOKING_TIME} мин.'),
+            MinValueValidator(MIN_COOKING_TIME,
+                              message=f'Время приготовления должно '
+                                      f'быть не менее {MIN_COOKING_TIME} мин.'),
+            MaxValueValidator(MAX_COOKING_TIME,
+                              message=f'Время приготовления должно '
+                                      f'быть не более {MAX_COOKING_TIME} мин.'),
         ]
     )
 
@@ -137,7 +141,7 @@ class Recipe(models.Model):
         return self.name
 
 
-class IngredientInRecipe(models.Model):
+class RecipeEssentials(models.Model):
     """Ингредиенты в рецепте.
     Определение количества ингредиентов в рецепте.
     """
@@ -150,7 +154,7 @@ class IngredientInRecipe(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='list_of_ingredient',
+        # related_name='list_of_ingredient',
         verbose_name='Ингредиенты в рецепте'
     )
     amount = models.PositiveSmallIntegerField(
@@ -159,7 +163,7 @@ class IngredientInRecipe(models.Model):
     )
 
     class Meta:
-        default_related_name = 'ingredients_in_recipe'
+        # default_related_name = 'ingredients_in_recipe'
         verbose_name = 'Состав рецепта'
         verbose_name_plural = 'Состав рецептов'
 
