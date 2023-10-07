@@ -1,116 +1,89 @@
 import django.db.utils
 from django.shortcuts import get_object_or_404
-from djoser.views import UserViewSet
 from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS
+from rest_framework.permissions import AllowAny
 from api.v1.pagination import CustomPagination
-from api.v1.permissions import IsAdminOrReadOnly
-from api.v1.serializers import (UserSerializer, TagSerializer,
-                                IngredientSerializer, RecipeReadSerializer,
-                                RecipePostSerializer, ShortRecipeReadSerializer,
-                                UserSubscriptionSerializer)
+from api.v1.permissions import IsAuthorOrAdminOrReadOnly
+from api.v1.serializers import (TagSerializer, IngredientSerializer,
+                                RecipeReadSerializer, RecipePostSerializer,
+                                ShortRecipeReadSerializer)
 from recipes.models import Tag, Recipe, Ingredient, ShoppingCart, Favorite
-from users.models import User, Subscription
-
-
-class CustomUserViewSet(UserViewSet):
-    """"""
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    # permission_classes = (IsAdminOrReadOnly,)
-    link_model = Subscription
-
-    @action(
-        detail=False,
-        permission_classes=(IsAuthenticated,),
-    )
-    def subscriptions(self, request):   # ValueError: Cannot query "primestr": Must be "Subscription" instance.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        """"""
-        subscriber = request.user
-        queryset = User.objects.filter(subscriber__user=subscriber)
-        # pages = self.paginate_queryset(queryset)
-        serializer = UserSubscriptionSerializer(
-            # pages,
-            many=True,
-            context={'request': request}
-        )
-        return self.get_paginated_response(serializer.data)
-
-    @action(
-        detail=True,
-        methods=['get', 'delete', 'post'],
-        permission_classes=(IsAuthenticated,),
-    )
-    def subscribe(self, request, **kwargs):
-        """"""
-        subscriber = request.user
-        target_user_id = self.kwargs.get('id')
-        target_user = get_object_or_404(User, id=target_user_id)
-
-        if request.method == 'POST':
-            serializer = UserSubscriptionSerializer(
-                target_user,
-                data=request.data,
-                context={'request': request}
-            )
-            serializer.is_valid(raise_exception=True)
-            Subscription.objects.create(user=subscriber, author=target_user)
-            return Response('Подписка оформлена',
-                            status=status.HTTP_204_NO_CONTENT)
-
-        if request.method == 'DELETE':
-            subscription = get_object_or_404(
-                Subscription,
-                user=subscriber,
-                author=target_user
-            )
-            subscription.delete()
-            return Response('Подписка удалена', status=status.HTTP_204_NO_CONTENT)
-
-
-class UserSubscriptionsView(APIView):
-    def get(self, request):
-        user = request.user
-        queryset = User.objects.filter(subscribe__user=user)
-        serializer = UserSubscriptionSerializer(queryset, many=True,
-                                                context={'request': request})
-        return Response(serializer.data)
 
 
 class TagsAPIView(APIView):
     permission_classes = (AllowAny,)
 
-    def get(self, request):
-        queryset = Tag.objects.all()
-        serializer = TagSerializer(queryset, many=True)
-        return Response(serializer.data)
+    def get(self, request, pk=None):
+        if pk is None:
+            queryset = Tag.objects.all()
+            serializer = TagSerializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
+            try:
+                tag = Tag.objects.get(id=pk)
+                serializer = TagSerializer(tag)
+                return Response(serializer.data)
+            except Tag.DoesNotExist:
+                return Response({'detail': 'Тег не найден!'},
+                                status=status.HTTP_404_NOT_FOUND)
 
 
 class RecipesAPIView(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthorOrAdminOrReadOnly,)
+    pagination_class = PageNumberPagination
 
     def perform_create(self, serializer, **kwargs):
         serializer.save(author=self.request.user)
 
     def get(self, request):
         queryset = Recipe.objects.select_related('author')
+        paginator = self.pagination_class()
+        queryset = paginator.paginate_queryset(queryset, request)
         serializer_class = RecipeReadSerializer
         serializer = serializer_class(queryset, many=True,
                                       context={'request': request})
-        return Response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
-        serializer = RecipePostSerializer(data=request.data)
+        serializer = RecipePostSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save(author=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class RecipesDetailAPIView(APIView):
+    permission_classes = (IsAuthorOrAdminOrReadOnly,)
+
+    def get(self, request, pk):
+        queryset = get_object_or_404(Recipe, id=pk)
+        serializer_class = RecipeReadSerializer
+        serializer = serializer_class(queryset,
+                                      context={'request': request})
+        return Response(serializer.data)
+
+    def delete(self, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
+        self.check_object_permissions(request, recipe)
+        try:
+            recipe.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Recipe.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
+        self.check_object_permissions(request, recipe)
+        serializer = RecipePostSerializer(recipe, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class FavoritesAPIView(APIView):
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request, pk):
         return self.add_recipe(Favorite, request.user, pk)
@@ -139,7 +112,6 @@ class FavoritesAPIView(APIView):
 
 
 class ShoppingCartAPIView(APIView):
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request, pk):
         return self.add_recipe(ShoppingCart, request.user, pk)
@@ -170,7 +142,16 @@ class ShoppingCartAPIView(APIView):
 class IngredientsAPIView(APIView):
     permission_classes = (AllowAny,)
 
-    def get(self, request):
-        queryset = Ingredient.objects.all()
-        serializer = IngredientSerializer(queryset, many=True)
-        return Response(serializer.data)
+    def get(self, request, pk=None):
+        if pk is None:
+            queryset = Ingredient.objects.all()
+            serializer = IngredientSerializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
+            try:
+                ingredient = Ingredient.objects.get(id=pk)
+                serializer = IngredientSerializer(ingredient)
+                return Response(serializer.data)
+            except Ingredient.DoesNotExist:
+                return Response({'detail': 'Ингредиент не найден!'},
+                                status=status.HTTP_404_NOT_FOUND)

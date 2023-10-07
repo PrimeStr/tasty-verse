@@ -57,6 +57,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -99,22 +106,23 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
+    'DEFAULT_PAGINATION_CLASS':
+        'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 6,
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
 
 DJOSER = {
-    'LOGIN_FIELD': 'email',  # поле, используемое для авторизации (вместо стандартного 'username')
+    'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
-    # 'USER_CREATE_PASSWORD_RETYPE': True,  # требовать повторного ввода пароля при регистрации
 
     'SERIALIZERS': {
-                                      # UserSerializer
         'user': 'api.v1.serializers.UserSerializer',
         'user_create': 'api.v1.serializers.UserSerializer',
         'current_user': 'api.v1.serializers.UserSerializer',
-        'token': 'djoser.serializers.TokenSerializer',  # указание используемого сериалайзера для токена
+        'token': 'djoser.serializers.TokenSerializer',
         'set_password': 'djoser.serializers.SetPasswordSerializer',
     },
 
