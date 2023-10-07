@@ -1,12 +1,22 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from backend.settings import (EMAIL_LENGTH, NAME_LENGTH, ROLE_LENGTH,
-                              USERNAME_LENGTH)
+from constants.users import (EMAIL_LENGTH, NAME_LENGTH,
+                             ROLE_LENGTH, USERNAME_LENGTH)
 from users.validators import validate_username
 
 
 class User(AbstractUser):
+    """
+        Модель пользователя приложения.
+
+        Поля:
+            username (str): Юзернейм пользователя (уникальное).
+            email (str): Адрес электронной почты (уникальный).
+            first_name (str): Имя пользователя.
+            last_name (str): Фамилия пользователя.
+            role (str): Роль пользователя (из выбора в ROLES).
+        """
     USER = 'user'
     ADMIN = 'admin'
 
@@ -60,9 +70,17 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-    
-    
+
+
 class Subscription(models.Model):
+    """
+        Модель подписки между пользователями приложения.
+
+        Поля:
+            subscriber (User): Подписчик (пользователь, который подписывается).
+            target_user (User): Целевой пользователь (на которого подписываются).
+            created_at (datetime): Дата создания подписки.
+    """
     subscriber = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

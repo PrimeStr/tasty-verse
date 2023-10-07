@@ -95,28 +95,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 
-#-------------------------
-# Recipes константы
-#-------------------------
-
-COLORFIELD_LENGTH:int = 7
-INGREDIENT_LENGTH: int = 200
-RECIPE_NAME_LENGTH:int = 200
-TAG_LENGTH:int = 200
-
-MIN_COOKING_TIME:int = 1
-MAX_COOKING_TIME:int = 1440
-
-#-------------------------
-# Users константы
-#-------------------------
-
-EMAIL_LENGTH: int = 254
-NAME_LENGTH:int = 150
-ROLE_LENGTH: int = 20
-USERNAME_LENGTH: int = 150
-
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',

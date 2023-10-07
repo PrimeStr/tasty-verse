@@ -1,3 +1,4 @@
+import django.db.utils
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import status
@@ -7,9 +8,10 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS
 from api.v1.pagination import CustomPagination
 from api.v1.permissions import IsAdminOrReadOnly
-from api.v1.serializers import UserSerializer, TagSerializer, \
-    IngredientSerializer, RecipeReadSerializer, RecipePostSerializer, \
-    ShortRecipeReadSerializer, UserSubscriptionSerializer
+from api.v1.serializers import (UserSerializer, TagSerializer,
+                                IngredientSerializer, RecipeReadSerializer,
+                                RecipePostSerializer, ShortRecipeReadSerializer,
+                                UserSubscriptionSerializer)
 from recipes.models import Tag, Recipe, Ingredient, ShoppingCart, Favorite
 from users.models import User, Subscription
 
@@ -25,7 +27,7 @@ class CustomUserViewSet(UserViewSet):
         detail=False,
         permission_classes=(IsAuthenticated,),
     )
-    def subscriptions(self, request):
+    def subscriptions(self, request):   # ValueError: Cannot query "primestr": Must be "Subscription" instance.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         """"""
         subscriber = request.user
         queryset = User.objects.filter(subscriber__user=subscriber)
@@ -117,10 +119,14 @@ class FavoritesAPIView(APIView):
         return self.delete_recipe(Favorite, request.user, pk)
 
     def add_recipe(self, model, user, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        model.objects.create(user=user, recipe=recipe)
-        serializer = ShortRecipeReadSerializer(recipe)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            recipe = get_object_or_404(Recipe, id=pk)
+            model.objects.create(user=user, recipe=recipe)
+            serializer = ShortRecipeReadSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except django.db.utils.IntegrityError:
+            return Response({'errors': 'Рецепт уже в избранном!'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
     def delete_recipe(self, model, user, pk):
         try:
@@ -128,7 +134,7 @@ class FavoritesAPIView(APIView):
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except model.DoesNotExist:
-            return Response({'errors': 'Такого рецепта не существует!'},
+            return Response({'errors': 'Такого рецепта нет в избранном!'},
                             status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -142,10 +148,14 @@ class ShoppingCartAPIView(APIView):
         return self.delete_recipe(ShoppingCart, request.user, pk)
 
     def add_recipe(self, model, user, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        model.objects.create(user=user, recipe=recipe)
-        serializer = ShortRecipeReadSerializer(recipe)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            recipe = get_object_or_404(Recipe, id=pk)
+            model.objects.create(user=user, recipe=recipe)
+            serializer = ShortRecipeReadSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except django.db.utils.IntegrityError:
+            return Response({'errors': 'Рецепт уже в корзине!'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
     def delete_recipe(self, model, user, pk):
         try:
@@ -153,7 +163,7 @@ class ShoppingCartAPIView(APIView):
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except model.DoesNotExist:
-            return Response({'errors': 'Такого рецепта не существует!'},
+            return Response({'errors': 'Такого рецепта нет в корзине!'},
                             status=status.HTTP_400_BAD_REQUEST)
 
 

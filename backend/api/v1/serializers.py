@@ -7,8 +7,8 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework.relations import PrimaryKeyRelatedField
 
 from backend.settings import EMAIL_LENGTH
-from recipes.models import Tag, Recipe, Favorite, ShoppingCart, Ingredient, \
-    RecipeEssentials
+from recipes.models import (Tag, Recipe, Favorite, ShoppingCart,
+                            Ingredient, RecipeEssentials)
 from users.models import User, Subscription
 from users.validators import validate_username
 
