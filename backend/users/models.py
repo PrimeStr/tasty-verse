@@ -1,8 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from constants.users import (EMAIL_LENGTH, NAME_LENGTH,
-                             ROLE_LENGTH, USERNAME_LENGTH)
+from core.constants.users import (EMAIL_LENGTH, NAME_LENGTH,
+                                  ROLE_LENGTH, USERNAME_LENGTH)
 from users.validators import validate_username
 
 

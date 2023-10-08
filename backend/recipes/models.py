@@ -4,9 +4,9 @@ from django.core.validators import (MinValueValidator, MaxValueValidator,
 from django.db import models
 from django.db.models import UniqueConstraint
 
-from constants.recipes import (COLORFIELD_LENGTH, INGREDIENT_LENGTH,
-                               RECIPE_NAME_LENGTH, TAG_LENGTH,
-                               MIN_COOKING_TIME, MAX_COOKING_TIME)
+from core.constants.recipes import (COLORFIELD_LENGTH, INGREDIENT_LENGTH,
+                                    RECIPE_NAME_LENGTH, TAG_LENGTH,
+                                    MIN_COOKING_TIME, MAX_COOKING_TIME)
 from users.models import User
 
 

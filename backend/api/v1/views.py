@@ -1,15 +1,19 @@
 import django.db.utils
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
+from rest_framework.filters import SearchFilter
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
-from api.v1.pagination import CustomPagination
+
+from api.v1.filters import IngredientFilter
 from api.v1.permissions import IsAuthorOrAdminOrReadOnly
 from api.v1.serializers import (TagSerializer, IngredientSerializer,
                                 RecipeReadSerializer, RecipePostSerializer,
                                 ShortRecipeReadSerializer)
+from core.pagination import CustomPagination
 from recipes.models import Tag, Recipe, Ingredient, ShoppingCart, Favorite
 
 
@@ -33,7 +37,7 @@ class TagsAPIView(APIView):
 
 class RecipesAPIView(APIView):
     permission_classes = (IsAuthorOrAdminOrReadOnly,)
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPagination
 
     def perform_create(self, serializer, **kwargs):
         serializer.save(author=self.request.user)
@@ -48,7 +52,8 @@ class RecipesAPIView(APIView):
         return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
-        serializer = RecipePostSerializer(data=request.data, context={'request': request})
+        serializer = RecipePostSerializer(data=request.data,
+                                          context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save(author=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -76,7 +81,10 @@ class RecipesDetailAPIView(APIView):
     def patch(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
         self.check_object_permissions(request, recipe)
-        serializer = RecipePostSerializer(recipe, data=request.data, partial=True, context={'request': request})
+        serializer = RecipePostSerializer(recipe,
+                                          data=request.data,
+                                          partial=True,
+                                          context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -139,19 +147,45 @@ class ShoppingCartAPIView(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
-class IngredientsAPIView(APIView):
+class IngredientsAPIView(ListAPIView):
     permission_classes = (AllowAny,)
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = IngredientFilter
+    pagination_class = None
 
-    def get(self, request, pk=None):
-        if pk is None:
-            queryset = Ingredient.objects.all()
-            serializer = IngredientSerializer(queryset, many=True)
-            return Response(serializer.data)
-        else:
-            try:
-                ingredient = Ingredient.objects.get(id=pk)
-                serializer = IngredientSerializer(ingredient)
-                return Response(serializer.data)
-            except Ingredient.DoesNotExist:
-                return Response({'detail': 'Ингредиент не найден!'},
-                                status=status.HTTP_404_NOT_FOUND)
+
+class IngredientsDetailAPIView(RetrieveAPIView):
+    permission_classes = (AllowAny,)
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    pagination_class = None
+
+
+# Cтарая версия внизу
+
+# class IngredientsAPIView(APIView):
+#     permission_classes = (AllowAny,)
+#     filter_backends = (DjangoFilterBackend,)
+#     filterset_class = IngredientFilter
+#     #search_fields = ('^name', 'name')
+#
+#     def get(self, request, pk=None):
+#         if pk is None:
+#             queryset = Ingredient.objects.all()
+#             serializer = IngredientSerializer(queryset, many=True)
+#             return Response(serializer.data)
+#         else:
+#             try:
+#                 ingredient = Ingredient.objects.get(id=pk)
+#                 serializer = IngredientSerializer(ingredient)
+#                 return Response(serializer.data)
+#             except Ingredient.DoesNotExist:
+#                 return Response({'detail': 'Ингредиент не найден!'},
+#                                 status=status.HTTP_404_NOT_FOUND)
+#
+#     # def get(self, request):
+#     #     queryset = Ingredient.objects.all()
+#     #     serializer = IngredientSerializer(queryset, many=True)
+#     #     return Response(serializer.data)

@@ -1,13 +1,15 @@
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from api.v1.filters import UserFilter
 from api.v1.permissions import IsAdminOrReadOnly
+from core.pagination import CustomPagination
 from users.models import Subscription, User
 from users.serializers import UserSerializer, UserSubscriptionSerializer
 
@@ -17,15 +19,16 @@ class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = CustomPagination
     link_model = Subscription
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = UserFilter
 
     @action(
         detail=False,
         permission_classes=(IsAuthenticated,),
-        pagination_class=PageNumberPagination,
     )
-    def subscriptions(self,
-                      request):  # ValueError: Cannot query "primestr": Must be "Subscription" instance.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    def subscriptions(self, request):
         """"""
         subscriber = request.user
         queryset = User.objects.filter(subscriber__subscriber=subscriber)
@@ -59,8 +62,9 @@ class CustomUserViewSet(UserViewSet):
             serializer.is_valid(raise_exception=True)
             Subscription.objects.create(subscriber=subscriber,
                                         target_user=target_user)
-            return Response('Подписка оформлена',
-                            status=status.HTTP_204_NO_CONTENT)
+            serializer = UserSubscriptionSerializer(target_user,
+                                                    context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
             subscription = Subscription.objects.filter(
@@ -76,6 +80,15 @@ class CustomUserViewSet(UserViewSet):
                 return Response('Подписка не найдена',
                                 status=status.HTTP_404_NOT_FOUND)
 
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=(IsAuthenticated,)
+    )
+    def me(self, request):
+        user = request.user
+        serializer = UserSerializer(user, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserSubscriptionsView(APIView):

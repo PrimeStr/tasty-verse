@@ -50,6 +50,7 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=False)
     first_name = serializers.CharField(required=False)
     last_name = serializers.CharField(required=False)
+    is_subscribed = SerializerMethodField()
     recipes_count = SerializerMethodField()
     recipes = SerializerMethodField()
 
@@ -61,9 +62,26 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
             'username',
             'first_name',
             'last_name',
+            'is_subscribed',
             'recipes',
             'recipes_count',
         )
+
+    def get_is_subscribed(self, target_user):
+        """"""
+        subscriber = self.context.get('request').user
+        if isinstance(target_user, User):
+            if subscriber.is_anonymous:
+                return False
+            return bool(target_user.subscriber.filter(subscriber=subscriber))
+
+        elif isinstance(target_user, list):
+            if subscriber.is_anonymous:
+                return False
+            return Subscription.objects.filter(
+                subscriber=subscriber, target_user=target_user
+            ).exists()
+
 
     def get_recipes_count(self, author):
         """"""

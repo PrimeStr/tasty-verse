@@ -61,6 +61,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             'is_favorited',
             'is_in_shopping_cart',
             'image',
+            'name',
             'text',
             'cooking_time',
         )
@@ -146,16 +147,30 @@ class RecipePostSerializer(serializers.ModelSerializer):
         """"""
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
+
+        for ingredient in ingredients:
+            ingredient = ingredient['id']
+            try:
+                Ingredient.objects.get(id=ingredient)
+            except Ingredient.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"ingredients": f"Ингредиента с ID {ingredient} "
+                                    f"не существует."})
+
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
         self.create_recipe_essentials(recipe=recipe,
                                       ingredients=ingredients)
         return recipe
 
-
-
     def validate_ingredients(self, value):
         if not value:
             raise ValidationError(
-                {'ingredients': 'Нужен минимум 1 ингредиент!'})
+                {"ingredients": "Нужен минимум 1 ингредиент!"})
+        return value
+
+    def validate_image(self, value):
+        if not value:
+            raise ValidationError(
+                {'image': 'Нужно изображение!'})
         return value
