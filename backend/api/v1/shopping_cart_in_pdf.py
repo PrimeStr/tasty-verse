@@ -26,7 +26,7 @@ def generate_shopping_list_pdf(user):
         'ingredient__measurement_unit'
     ).annotate(total_amount=Sum('amount'))
 
-    html_content = f'<h1>Мой список покупок</h1><ul>'
+    html_content = '<h1>Мой список покупок</h1><ul>'
     for ingredient in ingredients:
         ingredient_name = ingredient['ingredient__name']
         measurement_unit = ingredient['ingredient__measurement_unit']

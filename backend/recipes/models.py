@@ -84,8 +84,8 @@ class Tag(models.Model):
         validators=[
             RegexValidator(
                 regex=r'^#([A-F0-9]{6})$',
-                message=(f'Color должен начинаться со знака # и содержать '
-                         f'только цифры и заглавные английские буквы.'),
+                message=('Color должен начинаться со знака # и содержать '
+                         'только цифры и заглавные английские буквы.'),
                 code='invalid_color'
             )
         ]
@@ -97,8 +97,8 @@ class Tag(models.Model):
         validators=[
             RegexValidator(
                 regex=r'^[-a-zA-Z0-9_]+$',
-                message=(f'Slug должен содержать только буквы (строчные и '
-                         f'заглавные), цифры, дефисы и подчеркивания.'),
+                message=('Slug должен содержать только буквы (строчные и '
+                         'заглавные), цифры, дефисы и подчеркивания.'),
                 code='invalid_slug'
             )
         ]
