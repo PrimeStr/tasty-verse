@@ -2,13 +2,29 @@ from django.contrib import admin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
-from recipes.models import Ingredient, Tag, Recipe, RecipeEssentials, Favorite, ShoppingCart
-
+from recipes.models import (Ingredient, Tag, Recipe,
+                            RecipeEssentials, Favorite, ShoppingCart)
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    """Настроенная админ-панель Тегов."""
+    """
+    Настроенная админ-панель Тегов.
+
+    Список отображаемых полей:
+    - id
+    - name
+    - color
+    - slug
+
+    Поля для поиска:
+    - name
+
+    Фильтры:
+    - id
+    - name
+    - color
+    """
 
     list_display = (
         'id',
@@ -22,7 +38,28 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    """Настроенная админ-панель Тегов."""
+    """
+    Настроенная админ-панель Рецептов.
+
+    Список отображаемых полей:
+    - id
+    - author
+    - name
+    - image
+    - text
+    - cooking_time
+
+    Поле "Пусто" отображается как "-пусто-".
+
+    Поля для поиска:
+    - author
+
+    Фильтры:
+    - id
+    - author
+    - name
+    - tags
+    """
     list_display = (
         'id',
         'author',
@@ -39,7 +76,24 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(RecipeEssentials)
 class RecipeEssentialsAdmin(admin.ModelAdmin):
-    """Настроенная админ-панель Ингредиенты в рецепте."""
+    """
+    Настроенная админ-панель Ингредиентов в рецепте.
+
+    Список отображаемых полей:
+    - id
+    - recipe
+    - ingredient
+    - amount
+
+    Поля для поиска:
+    - ingredient
+
+    Фильтры:
+    - id
+    - recipe
+    - ingredient
+    - amount
+    """
     list_display = (
         'id',
         'recipe',
@@ -51,18 +105,58 @@ class RecipeEssentialsAdmin(admin.ModelAdmin):
 
 
 class IngredientResource(resources.ModelResource):
+    """
+        Ресурс для импорта/экспорта ингредиентов.
+
+        Мета:
+        - model (Ingredient): Модель ингредиента для импорта/экспорта.
+        """
+
     class Meta:
         model = Ingredient
 
 
 class IngredientAdmin(ImportExportModelAdmin):
+    """
+        Настроенная админ-панель Ингредиентов.
+
+        Ресурс класса:
+        - IngredientResource: Ресурс для импорта/экспорта ингредиентов.
+
+        Модель ингредиента:
+        - id
+        - name
+        - measurement_unit
+
+        Мета:
+        - list_display (tuple): Список отображаемых полей.
+        - search_fields (tuple): Поля для поиска.
+        - list_filter (tuple): Фильтры.
+        """
     resource_classes = [IngredientResource]
 
-admin.site.register(Ingredient, IngredientAdmin)
+    list_display = (
+        'id',
+        'name',
+        'measurement_unit',
+    )
+    search_fields = ('name', 'measurement_unit')
+    list_filter = ('id', 'name', 'measurement_unit')
+
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    """Настроенная админ-панель избранные рецепты у пользователей."""
+    """
+    Настроенная админ-панель избранных рецептов у пользователей.
+
+    Список отображаемых полей:
+    - user
+    - recipe
+
+    Фильтры:
+    - user
+    - recipe
+    """
     list_display = (
         'user',
         'recipe'
@@ -73,7 +167,17 @@ class FavoriteAdmin(admin.ModelAdmin):
 
 @admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    """Настроенная админ-панель корзин покупок у пользователей."""
+    """
+    Настроенная админ-панель корзин покупок у пользователей.
+
+    Список отображаемых полей:
+    - user
+    - recipe
+
+    Фильтры:
+    - user
+    - recipe
+    """
     list_display = (
         'user',
         'recipe'

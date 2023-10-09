@@ -4,6 +4,17 @@ from django.core.exceptions import ValidationError
 
 
 def validate_username(username):
+    """
+    Проверяет, соответствует ли имя пользователя заданным критериям.
+    Проверяет, пользователя на попытку использования username 'me'.
+
+    Args:
+        username (str): Имя пользователя для проверки.
+
+    Raises:
+        ValidationError: Если имя пользователя не соответствует заданным
+        критериям или пользователь пытается использовать username 'me'.
+    """
     if username == 'me':
         raise ValidationError('Нельзя использовать имя пользователя me')
 

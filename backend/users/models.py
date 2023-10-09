@@ -8,15 +8,27 @@ from users.validators import validate_username
 
 class User(AbstractUser):
     """
-        Модель пользователя приложения.
+    Модель пользователя приложения.
 
-        Поля:
-            username (str): Юзернейм пользователя (уникальное).
-            email (str): Адрес электронной почты (уникальный).
-            first_name (str): Имя пользователя.
-            last_name (str): Фамилия пользователя.
-            role (str): Роль пользователя (из выбора в ROLES).
-        """
+    Поля:
+    - username (str): Юзернейм пользователя (уникальное).
+    - email (str): Адрес электронной почты (уникальный).
+    - first_name (str): Имя пользователя.
+    - last_name (str): Фамилия пользователя.
+    - role (str): Роль пользователя (из выбора в ROLES).
+
+    Мета:
+    - ordering (list): Сортировка объектов модели по умолчанию.
+    - verbose_name (str): Название модели в единственном числе.
+    - verbose_name_plural (str): Название модели во множественном числе.
+
+    Методы:
+    - is_admin: Проверяет, является ли пользователь администратором.
+
+    Пример:
+    user = User.objects.get(username='example')
+    print(user.is_admin)  # Выведет True, если пользователь - администратор.
+    """
     USER = 'user'
     ADMIN = 'admin'
 
@@ -74,12 +86,21 @@ class User(AbstractUser):
 
 class Subscription(models.Model):
     """
-        Модель подписки между пользователями приложения.
+    Модель подписки между пользователями приложения.
 
-        Поля:
-            subscriber (User): Подписчик (пользователь, который подписывается).
-            target_user (User): Целевой пользователь (на которого подписываются).
-            created_at (datetime): Дата создания подписки.
+    Поля:
+    - subscriber (User): Подписчик (пользователь, который подписывается).
+    - target_user (User): Целевой пользователь (на которого подписываются).
+    - created_at (datetime): Дата создания подписки.
+
+    Мета:
+    - unique_together (tuple): Уникальные пары подписчиков и целевых пользователей.
+    - verbose_name (str): Название модели в единственном числе.
+    - verbose_name_plural (str): Название модели во множественном числе.
+
+    Пример:
+    subscription = Subscription.objects.get(pk=1)
+    print(subscription)  # Выведет строку в формате "Подписчик -> Целевой пользователь".
     """
     subscriber = models.ForeignKey(
         User,

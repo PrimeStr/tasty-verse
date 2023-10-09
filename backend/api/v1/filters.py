@@ -7,15 +7,15 @@ from users.models import User
 
 class RecipeFilter(FilterSet):
     """
-        Настраиваемые фильтры для рецептов.
+    Настраиваемые фильтры для рецептов.
 
-        Позволяет фильтровать рецепты по тегам, авторам, а также по наличию
-        в избранном или корзине определенного пользователя.
+    Позволяет фильтровать рецепты по тегам, авторам, а также по наличию
+    в избранном или корзине определенного пользователя.
 
-        Attributes:
-            - is_favorited (NumberFilter): Фильтр для проверки наличия рецепта в избранном пользователя.
-            - is_in_shopping_cart (NumberFilter): Фильтр для проверки наличия рецепта в корзине пользователя.
-            - tags (ModelMultipleChoiceFilter): Фильтр по тегам.
+    Attributes:
+        - is_favorited (NumberFilter): Фильтр для проверки наличия рецепта в избранном пользователя.
+        - is_in_shopping_cart (NumberFilter): Фильтр для проверки наличия рецепта в корзине пользователя.
+        - tags (ModelMultipleChoiceFilter): Фильтр по тегам.
     """
 
     is_favorited = NumberFilter(
@@ -73,7 +73,18 @@ class UserFilter(FilterSet):
 
 
 class IngredientFilter(FilterSet):
-    """"""
+    """
+    Настраиваемые фильтры для ингредиентов.
+
+    Позволяет фильтровать ингредиенты по названию.
+
+    Attributes:
+        - name (CharFilter): Фильтр по названию ингредиента (по частичному совпадению).
+
+    Meta:
+        - model (Ingredient): Связанная модель, по которой осуществляется фильтрация.
+        - fields (tuple): Поля модели `Ingredient`, по которым можно осуществлять фильтрацию.
+    """
     name = CharFilter(
         lookup_expr='icontains'
     )

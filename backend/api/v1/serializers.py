@@ -17,7 +17,7 @@ class TagSerializer(serializers.ModelSerializer):
         Attributes:
             id (int, read-only): Идентификатор тега.
             name (str): Название тега (без символа '#' и в верхнем регистре).
-        """
+    """
 
     class Meta:
         model = Tag
@@ -36,7 +36,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
         Attributes:
             id (int, read-only): Идентификатор ингредиента.
-        """
+    """
 
     class Meta:
         model = Ingredient
@@ -53,7 +53,7 @@ class ShortRecipeReadSerializer(serializers.ModelSerializer):
             name (str): Название рецепта.
             image (str): Изображение рецепта в формате Base64.
             cooking_time (int): Время приготовления рецепта в минутах.
-        """
+    """
     """"""
     image = Base64ImageField()
 
@@ -79,7 +79,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             image (str): Изображение рецепта в формате Base64.
             is_favorited (bool): Указывает, добавлен ли рецепт в избранное текущим пользователем.
             is_in_shopping_cart (bool): Указывает, добавлен ли рецепт в корзину текущим пользователем.
-        """
+    """
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
     ingredients = SerializerMethodField()
@@ -162,7 +162,7 @@ class RecipePostSerializer(serializers.ModelSerializer):
             name (str): Название рецепта.
             text (str): Описание рецепта.
             cooking_time (int): Время приготовления рецепта в минутах.
-        """
+    """
     tags = PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
     author = UserSerializer(read_only=True)
     id = IntegerField(read_only=True)
@@ -190,7 +190,6 @@ class RecipePostSerializer(serializers.ModelSerializer):
 
     def create_recipe_essentials(self, recipe, ingredients):
         """Создает связи между рецептом и ингредиентами (RecipeEssentials)."""
-        """"""
         essentials = []
         for ingredient in ingredients:
             composition = RecipeEssentials(
