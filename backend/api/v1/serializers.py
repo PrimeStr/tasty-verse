@@ -11,6 +11,14 @@ from users.serializers import UserSerializer
 
 
 class TagSerializer(serializers.ModelSerializer):
+    """
+        Сериализатор для модели Tag.
+
+        Attributes:
+            id (int, read-only): Идентификатор тега.
+            name (str): Название тега (без символа '#' и в верхнем регистре).
+        """
+
     class Meta:
         model = Tag
         fields = '__all__'
@@ -23,6 +31,13 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    """
+        Сериализатор для модели Ingredient.
+
+        Attributes:
+            id (int, read-only): Идентификатор ингредиента.
+        """
+
     class Meta:
         model = Ingredient
         fields = '__all__'
@@ -30,6 +45,15 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class ShortRecipeReadSerializer(serializers.ModelSerializer):
+    """
+        Краткий сериализатор для модели Recipe.
+
+        Attributes:
+            id (int, read-only): Идентификатор рецепта.
+            name (str): Название рецепта.
+            image (str): Изображение рецепта в формате Base64.
+            cooking_time (int): Время приготовления рецепта в минутах.
+        """
     """"""
     image = Base64ImageField()
 
@@ -44,6 +68,18 @@ class ShortRecipeReadSerializer(serializers.ModelSerializer):
 
 
 class RecipeReadSerializer(serializers.ModelSerializer):
+    """
+        Сериализатор для полной информации о рецепте (включая ингредиенты).
+
+        Attributes:
+            id (int, read-only): Идентификатор рецепта.
+            tags (TagSerializer): Сериализатор для тегов рецепта.
+            author (UserSerializer): Сериализатор для автора рецепта.
+            ingredients (list of dict): Список ингредиентов рецепта.
+            image (str): Изображение рецепта в формате Base64.
+            is_favorited (bool): Указывает, добавлен ли рецепт в избранное текущим пользователем.
+            is_in_shopping_cart (bool): Указывает, добавлен ли рецепт в корзину текущим пользователем.
+        """
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
     ingredients = SerializerMethodField()
@@ -67,6 +103,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         )
 
     def get_ingredients(self, obj):
+        """Возвращает список ингредиентов рецепта в виде списка словарей."""
         """"""
         recipe = obj
         ingredients = recipe.ingredients.values(
@@ -78,6 +115,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         return ingredients
 
     def get_is_favorited(self, recipe):
+        """Указывает, добавлен ли рецепт в избранное текущим пользователем."""
         """"""
         user = self.context.get('request').user
         if user.is_authenticated:
@@ -85,6 +123,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         return False
 
     def get_is_in_shopping_cart(self, recipe):
+        """Указывает, добавлен ли рецепт в корзину текущим пользователем."""
         """"""
         user = self.context.get('request').user
         if user.is_authenticated:
@@ -93,7 +132,13 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
 
 class RecipeEssentialsSerializer(serializers.ModelSerializer):
-    """"""
+    """
+    Сериализатор для связи между моделями Recipe и Ingredient.
+
+    Attributes:
+        id (int, write-only): Идентификатор ингредиента.
+        amount (int): Количество ингредиента в рецепте.
+    """
     id = IntegerField(write_only=True)
 
     class Meta:
@@ -105,6 +150,19 @@ class RecipeEssentialsSerializer(serializers.ModelSerializer):
 
 
 class RecipePostSerializer(serializers.ModelSerializer):
+    """
+        Сериализатор для создания рецепта.
+
+        Attributes:
+            id (int, read-only): Идентификатор рецепта.
+            tags (TagSerializer): Сериализатор для тегов рецепта.
+            author (UserSerializer): Сериализатор для автора рецепта.
+            ingredients (RecipeEssentialsSerializer): Сериализатор для ингредиентов рецепта.
+            image (str): Изображение рецепта в формате Base64.
+            name (str): Название рецепта.
+            text (str): Описание рецепта.
+            cooking_time (int): Время приготовления рецепта в минутах.
+        """
     tags = PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
     author = UserSerializer(read_only=True)
     id = IntegerField(read_only=True)
@@ -125,13 +183,13 @@ class RecipePostSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
-        """Преоразование ингредиентов в словарь с данными
-        из списка словарей, в Рецепте."""
+        """Преобразует ингредиенты в словарь с данными из списка словарей."""
         request = self.context.get('request')
         context = {'request': request}
         return RecipeReadSerializer(instance, context=context).data
 
     def create_recipe_essentials(self, recipe, ingredients):
+        """Создает связи между рецептом и ингредиентами (RecipeEssentials)."""
         """"""
         essentials = []
         for ingredient in ingredients:
@@ -144,6 +202,7 @@ class RecipePostSerializer(serializers.ModelSerializer):
         RecipeEssentials.objects.bulk_create(essentials)
 
     def create(self, validated_data):
+        """Создает новый рецепт в базе данных."""
         """"""
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
@@ -164,12 +223,14 @@ class RecipePostSerializer(serializers.ModelSerializer):
         return recipe
 
     def validate_ingredients(self, value):
+        """Дополнительно проверяет наличие ингредиентов в рецепте."""
         if not value:
             raise ValidationError(
                 {"ingredients": "Нужен минимум 1 ингредиент!"})
         return value
 
     def validate_image(self, value):
+        """Дополнительно проверяет наличие изображения в рецепте."""
         if not value:
             raise ValidationError(
                 {'image': 'Нужно изображение!'})

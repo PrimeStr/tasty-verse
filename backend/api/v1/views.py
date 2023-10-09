@@ -1,23 +1,37 @@
-import django.db.utils
+from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
 
-from api.v1.filters import IngredientFilter
+from api.v1.filters import IngredientFilter, RecipeFilter
 from api.v1.permissions import IsAuthorOrAdminOrReadOnly
-from api.v1.serializers import (TagSerializer, IngredientSerializer,
-                                RecipeReadSerializer, RecipePostSerializer,
-                                ShortRecipeReadSerializer)
+from api.v1.serializers import (IngredientSerializer, RecipePostSerializer,
+                                RecipeReadSerializer, ShortRecipeReadSerializer,
+                                TagSerializer)
+from api.v1.shopping_cart_in_pdf import generate_shopping_list_pdf
 from core.pagination import CustomPagination
-from recipes.models import Tag, Recipe, Ingredient, ShoppingCart, Favorite
+from recipes.models import (Favorite, Ingredient, Recipe,
+                            ShoppingCart, Tag)
 
 
 class TagsAPIView(APIView):
+    """
+        API endpoint для работы с тегами рецептов.
+
+        GET:
+        Получение списка всех тегов или конкретного тега по id.
+
+        Args:
+            pk (int, optional): Идентификатор тега.
+
+        Returns:
+            Response: JSON-сериализованный список тегов или информация о конкретном теге.
+
+        """
     permission_classes = (AllowAny,)
 
     def get(self, request, pk=None):
@@ -36,14 +50,34 @@ class TagsAPIView(APIView):
 
 
 class RecipesAPIView(APIView):
+    """
+        API endpoint для работы с рецептами.
+
+        GET:
+        Получение списка рецептов с возможностью фильтрации.
+
+        POST:
+        Создание нового рецепта.
+
+        Args:
+            pk (int, optional): Идентификатор рецепта.
+
+        Returns:
+            Response: JSON-сериализованный список рецептов или информация о конкретном рецепте.
+
+        """
     permission_classes = (IsAuthorOrAdminOrReadOnly,)
     pagination_class = CustomPagination
+    filter_backends = (DjangoFilterBackend,)
 
     def perform_create(self, serializer, **kwargs):
         serializer.save(author=self.request.user)
 
     def get(self, request):
         queryset = Recipe.objects.select_related('author')
+        filterset = RecipeFilter(request.query_params, queryset=queryset,
+                                 request=request)
+        queryset = filterset.qs
         paginator = self.pagination_class()
         queryset = paginator.paginate_queryset(queryset, request)
         serializer_class = RecipeReadSerializer
@@ -60,6 +94,25 @@ class RecipesAPIView(APIView):
 
 
 class RecipesDetailAPIView(APIView):
+    """
+        API endpoint для работы с конкретным рецептом.
+
+        GET:
+        Получение информации о конкретном рецепте.
+
+        DELETE:
+        Удаление конкретного рецепта.
+
+        PATCH:
+        Обновление конкретного рецепта.
+
+        Args:
+            pk (int): Идентификатор рецепта.
+
+        Returns:
+            Response: JSON-сериализованная информация о рецепте.
+
+        """
     permission_classes = (IsAuthorOrAdminOrReadOnly,)
 
     def get(self, request, pk):
@@ -92,6 +145,22 @@ class RecipesDetailAPIView(APIView):
 
 
 class FavoritesAPIView(APIView):
+    """
+        API endpoint для работы с избранными рецептами пользователей.
+
+        POST:
+        Добавление рецепта в избранное.
+
+        DELETE:
+        Удаление рецепта из избранного.
+
+        Args:
+            pk (int): Идентификатор рецепта.
+
+        Returns:
+            Response: JSON-сериализованная информация о рецепте.
+
+        """
 
     def post(self, request, pk):
         return self.add_recipe(Favorite, request.user, pk)
@@ -105,7 +174,7 @@ class FavoritesAPIView(APIView):
             model.objects.create(user=user, recipe=recipe)
             serializer = ShortRecipeReadSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        except django.db.utils.IntegrityError:
+        except IntegrityError:
             return Response({'errors': 'Рецепт уже в избранном!'},
                             status=status.HTTP_400_BAD_REQUEST)
 
@@ -120,6 +189,22 @@ class FavoritesAPIView(APIView):
 
 
 class ShoppingCartAPIView(APIView):
+    """
+        API endpoint для работы с корзиной покупок пользователей.
+
+        POST:
+        Добавление рецепта в корзину.
+
+        DELETE:
+        Удаление рецепта из корзины.
+
+        Args:
+            pk (int): Идентификатор рецепта.
+
+        Returns:
+            Response: JSON-сериализованная информация о рецепте.
+
+        """
 
     def post(self, request, pk):
         return self.add_recipe(ShoppingCart, request.user, pk)
@@ -133,7 +218,7 @@ class ShoppingCartAPIView(APIView):
             model.objects.create(user=user, recipe=recipe)
             serializer = ShortRecipeReadSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        except django.db.utils.IntegrityError:
+        except IntegrityError:
             return Response({'errors': 'Рецепт уже в корзине!'},
                             status=status.HTTP_400_BAD_REQUEST)
 
@@ -147,7 +232,32 @@ class ShoppingCartAPIView(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
+class DownloadShoppingCart(APIView):
+    """
+        API endpoint для скачивания списка покупок в формате PDF.
+
+        GET:
+        Получение списка покупок в формате PDF.
+
+        Returns:
+            Response: PDF-файл списка покупок.
+
+        """
+
+    def get(self, request):
+        user = request.user
+        shopping_list = generate_shopping_list_pdf(user)
+        return shopping_list
+
+
 class IngredientsAPIView(ListAPIView):
+    """
+        API endpoint для работы с ингредиентами.
+
+        Returns:
+            Response: JSON-сериализованный список ингредиентов.
+
+        """
     permission_classes = (AllowAny,)
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -157,35 +267,17 @@ class IngredientsAPIView(ListAPIView):
 
 
 class IngredientsDetailAPIView(RetrieveAPIView):
+    """
+        API endpoint для получения информации о конкретном ингредиенте.
+
+        Args:
+            pk (int): Идентификатор ингредиента.
+
+        Returns:
+            Response: JSON-сериализованная информация о ингредиенте.
+
+        """
     permission_classes = (AllowAny,)
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
-
-
-# Cтарая версия внизу
-
-# class IngredientsAPIView(APIView):
-#     permission_classes = (AllowAny,)
-#     filter_backends = (DjangoFilterBackend,)
-#     filterset_class = IngredientFilter
-#     #search_fields = ('^name', 'name')
-#
-#     def get(self, request, pk=None):
-#         if pk is None:
-#             queryset = Ingredient.objects.all()
-#             serializer = IngredientSerializer(queryset, many=True)
-#             return Response(serializer.data)
-#         else:
-#             try:
-#                 ingredient = Ingredient.objects.get(id=pk)
-#                 serializer = IngredientSerializer(ingredient)
-#                 return Response(serializer.data)
-#             except Ingredient.DoesNotExist:
-#                 return Response({'detail': 'Ингредиент не найден!'},
-#                                 status=status.HTTP_404_NOT_FOUND)
-#
-#     # def get(self, request):
-#     #     queryset = Ingredient.objects.all()
-#     #     serializer = IngredientSerializer(queryset, many=True)
-#     #     return Response(serializer.data)
