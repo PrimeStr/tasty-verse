@@ -94,13 +94,15 @@ class Subscription(models.Model):
     - created_at (datetime): Дата создания подписки.
 
     Мета:
-    - unique_together (tuple): Уникальные пары подписчиков и целевых пользователей.
+    - unique_together (tuple): Уникальные пары подписчиков и
+    целевых пользователей.
     - verbose_name (str): Название модели в единственном числе.
     - verbose_name_plural (str): Название модели во множественном числе.
 
     Пример:
     subscription = Subscription.objects.get(pk=1)
-    print(subscription)  # Выведет строку в формате "Подписчик -> Целевой пользователь".
+    print(subscription)  # Выведет строку в формате
+    "Подписчик -> Целевой пользователь".
     """
     subscriber = models.ForeignKey(
         User,

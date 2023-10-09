@@ -12,7 +12,8 @@ from users.models import User
 
 class Ingredient(models.Model):
     """
-    Модель ингредиента для рецепта. Один ингредиент может быть у многих рецептов.
+    Модель ингредиента для рецепта. Один ингредиент может быть у
+    многих рецептов.
 
     Поля:
     - name (CharField): Название ингредиента для рецепта.
@@ -83,8 +84,8 @@ class Tag(models.Model):
         validators=[
             RegexValidator(
                 regex=r'^#([A-F0-9]{6})$',
-                message=(f'Color должен начинаться со знака # и содержать только '
-                         f'цифры и заглавные английские буквы.'),
+                message=(f'Color должен начинаться со знака # и содержать '
+                         f'только цифры и заглавные английские буквы.'),
                 code='invalid_color'
             )
         ]
@@ -175,11 +176,11 @@ class Recipe(models.Model):
         help_text='Введите время приготовления',
         validators=[
             MinValueValidator(MIN_COOKING_TIME,
-                              message=f'Время приготовления должно '
-                                      f'быть не менее {MIN_COOKING_TIME} мин.'),
+                              message=f'Время приготовления должно быть не '
+                                      f'менее {MIN_COOKING_TIME} мин.'),
             MaxValueValidator(MAX_COOKING_TIME,
-                              message=f'Время приготовления должно '
-                                      f'быть не более {MAX_COOKING_TIME} мин.'),
+                              message=f'Время приготовления должно быть не '
+                                      f'более {MAX_COOKING_TIME} мин.'),
         ]
     )
 
@@ -206,7 +207,8 @@ class RecipeEssentials(models.Model):
     - verbose_name_plural (str): Название модели во множественном числе.
 
     Методы:
-    - __str__(): Возвращает строковое представление ингредиента и его количества.
+    - __str__(): Возвращает строковое представление ингредиента
+    и его количества.
     """
     recipe = models.ForeignKey(
         Recipe,

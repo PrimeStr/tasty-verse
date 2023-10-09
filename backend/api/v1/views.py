@@ -10,8 +10,8 @@ from rest_framework.views import APIView
 from api.v1.filters import IngredientFilter, RecipeFilter
 from api.v1.permissions import IsAuthorOrAdminOrReadOnly
 from api.v1.serializers import (IngredientSerializer, RecipePostSerializer,
-                                RecipeReadSerializer, ShortRecipeReadSerializer,
-                                TagSerializer)
+                                RecipeReadSerializer, TagSerializer,
+                                ShortRecipeReadSerializer)
 from api.v1.shopping_cart_in_pdf import generate_shopping_list_pdf
 from core.pagination import CustomPagination
 from recipes.models import (Favorite, Ingredient, Recipe,
@@ -20,18 +20,19 @@ from recipes.models import (Favorite, Ingredient, Recipe,
 
 class TagsAPIView(APIView):
     """
-        API endpoint для работы с тегами рецептов.
+    API endpoint для работы с тегами рецептов.
 
-        GET:
+    GET:
         Получение списка всех тегов или конкретного тега по id.
 
-        Args:
-            pk (int, optional): Идентификатор тега.
+    Args:
+        pk (int, optional): Идентификатор тега.
 
-        Returns:
-            Response: JSON-сериализованный список тегов или информация о конкретном теге.
+    Returns:
+        Response: JSON-сериализованный список тегов или информация
+        о конкретном теге.
 
-        """
+    """
     permission_classes = (AllowAny,)
 
     def get(self, request, pk=None):
@@ -51,21 +52,22 @@ class TagsAPIView(APIView):
 
 class RecipesAPIView(APIView):
     """
-        API endpoint для работы с рецептами.
+    API endpoint для работы с рецептами.
 
-        GET:
+    GET:
         Получение списка рецептов с возможностью фильтрации.
 
-        POST:
+    POST:
         Создание нового рецепта.
 
-        Args:
-            pk (int, optional): Идентификатор рецепта.
+    Args:
+        pk (int, optional): Идентификатор рецепта.
 
-        Returns:
-            Response: JSON-сериализованный список рецептов или информация о конкретном рецепте.
+    Returns:
+        Response: JSON-сериализованный список рецептов или информация
+        о конкретном рецепте.
 
-        """
+    """
     permission_classes = (IsAuthorOrAdminOrReadOnly,)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
@@ -95,24 +97,24 @@ class RecipesAPIView(APIView):
 
 class RecipesDetailAPIView(APIView):
     """
-        API endpoint для работы с конкретным рецептом.
+    API endpoint для работы с конкретным рецептом.
 
-        GET:
+    GET:
         Получение информации о конкретном рецепте.
 
-        DELETE:
+    DELETE:
         Удаление конкретного рецепта.
 
-        PATCH:
+    PATCH:
         Обновление конкретного рецепта.
 
-        Args:
-            pk (int): Идентификатор рецепта.
+    Args:
+        pk (int): Идентификатор рецепта.
 
-        Returns:
-            Response: JSON-сериализованная информация о рецепте.
+    Returns:
+        Response: JSON-сериализованная информация о рецепте.
 
-        """
+    """
     permission_classes = (IsAuthorOrAdminOrReadOnly,)
 
     def get(self, request, pk):
@@ -146,21 +148,21 @@ class RecipesDetailAPIView(APIView):
 
 class FavoritesAPIView(APIView):
     """
-        API endpoint для работы с избранными рецептами пользователей.
+    API endpoint для работы с избранными рецептами пользователей.
 
-        POST:
+    POST:
         Добавление рецепта в избранное.
 
-        DELETE:
+    DELETE:
         Удаление рецепта из избранного.
 
-        Args:
-            pk (int): Идентификатор рецепта.
+    Args:
+        pk (int): Идентификатор рецепта.
 
-        Returns:
-            Response: JSON-сериализованная информация о рецепте.
+    Returns:
+        Response: JSON-сериализованная информация о рецепте.
 
-        """
+    """
 
     def post(self, request, pk):
         return self.add_recipe(Favorite, request.user, pk)
@@ -190,21 +192,20 @@ class FavoritesAPIView(APIView):
 
 class ShoppingCartAPIView(APIView):
     """
-        API endpoint для работы с корзиной покупок пользователей.
+    API endpoint для работы с корзиной покупок пользователей.
 
-        POST:
+    POST:
         Добавление рецепта в корзину.
 
-        DELETE:
+    DELETE:
         Удаление рецепта из корзины.
 
-        Args:
-            pk (int): Идентификатор рецепта.
+    Args:
+        pk (int): Идентификатор рецепта.
 
-        Returns:
-            Response: JSON-сериализованная информация о рецепте.
-
-        """
+    Returns:
+        Response: JSON-сериализованная информация о рецепте.
+    """
 
     def post(self, request, pk):
         return self.add_recipe(ShoppingCart, request.user, pk)
@@ -234,15 +235,14 @@ class ShoppingCartAPIView(APIView):
 
 class DownloadShoppingCart(APIView):
     """
-        API endpoint для скачивания списка покупок в формате PDF.
+    API endpoint для скачивания списка покупок в формате PDF.
 
-        GET:
-        Получение списка покупок в формате PDF.
+    GET:
+    Получение списка покупок в формате PDF.
 
-        Returns:
-            Response: PDF-файл списка покупок.
-
-        """
+    Returns:
+        Response: PDF-файл списка покупок.
+    """
 
     def get(self, request):
         user = request.user
@@ -252,12 +252,11 @@ class DownloadShoppingCart(APIView):
 
 class IngredientsAPIView(ListAPIView):
     """
-        API endpoint для работы с ингредиентами.
+    API endpoint для работы с ингредиентами.
 
-        Returns:
-            Response: JSON-сериализованный список ингредиентов.
-
-        """
+    Returns:
+        Response: JSON-сериализованный список ингредиентов.
+    """
     permission_classes = (AllowAny,)
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -268,15 +267,14 @@ class IngredientsAPIView(ListAPIView):
 
 class IngredientsDetailAPIView(RetrieveAPIView):
     """
-        API endpoint для получения информации о конкретном ингредиенте.
+    API endpoint для получения информации о конкретном ингредиенте.
 
-        Args:
-            pk (int): Идентификатор ингредиента.
+    Args:
+        pk (int): Идентификатор ингредиента.
 
-        Returns:
-            Response: JSON-сериализованная информация о ингредиенте.
-
-        """
+    Returns:
+        Response: JSON-сериализованная информация о ингредиенте.
+    """
     permission_classes = (AllowAny,)
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer

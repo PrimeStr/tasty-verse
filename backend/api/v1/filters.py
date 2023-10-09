@@ -13,8 +13,10 @@ class RecipeFilter(FilterSet):
     в избранном или корзине определенного пользователя.
 
     Attributes:
-        - is_favorited (NumberFilter): Фильтр для проверки наличия рецепта в избранном пользователя.
-        - is_in_shopping_cart (NumberFilter): Фильтр для проверки наличия рецепта в корзине пользователя.
+        - is_favorited (NumberFilter): Фильтр для проверки наличия рецепта
+        в избранном пользователя.
+        - is_in_shopping_cart (NumberFilter): Фильтр для проверки наличия
+        рецепта в корзине пользователя.
         - tags (ModelMultipleChoiceFilter): Фильтр по тегам.
     """
 
@@ -57,8 +59,10 @@ class UserFilter(FilterSet):
     Позволяет фильтровать пользователей по имени и email.
 
     Attributes:
-        - username (CharFilter): Фильтр по имени пользователя (по частичному совпадению).
-        - email (CharFilter): Фильтр по email пользователя (по частичному совпадению).
+        - username (CharFilter): Фильтр по имени пользователя
+        (по частичному совпадению).
+        - email (CharFilter): Фильтр по email пользователя
+        (по частичному совпадению).
     """
     username = CharFilter(
         lookup_expr='icontains'
@@ -79,11 +83,14 @@ class IngredientFilter(FilterSet):
     Позволяет фильтровать ингредиенты по названию.
 
     Attributes:
-        - name (CharFilter): Фильтр по названию ингредиента (по частичному совпадению).
+        - name (CharFilter): Фильтр по названию ингредиента
+        (по частичному совпадению).
 
     Meta:
-        - model (Ingredient): Связанная модель, по которой осуществляется фильтрация.
-        - fields (tuple): Поля модели `Ingredient`, по которым можно осуществлять фильтрацию.
+        - model (Ingredient): Связанная модель, по которой
+        осуществляется фильтрация.
+        - fields (tuple): Поля модели `Ingredient`, по которым можно
+        осуществлять фильтрацию.
     """
     name = CharFilter(
         lookup_expr='icontains'

@@ -88,7 +88,8 @@ class CustomUserViewSet(UserViewSet):
             kwargs: Параметры запроса, включая ID целевого пользователя.
 
         Returns:
-            Response: Статус операции или данные о пользователе (при создании подписки).
+            Response: Статус операции или данные о пользователе
+            (при создании подписки).
         """
         subscriber = request.user
         target_user_id = self.kwargs.get('id')
@@ -103,8 +104,10 @@ class CustomUserViewSet(UserViewSet):
             serializer.is_valid(raise_exception=True)
             Subscription.objects.create(subscriber=subscriber,
                                         target_user=target_user)
-            serializer = UserSubscriptionSerializer(target_user,
-                                                    context={'request': request})
+            serializer = UserSubscriptionSerializer(
+                target_user,
+                context={'request': request}
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
@@ -145,7 +148,8 @@ class UserSubscriptionsView(APIView):
     """
     Представление для получения списка подписок пользователя.
 
-    Позволяет получить список пользователей, на которых подписан текущий пользователь.
+    Позволяет получить список пользователей, на которых подписан
+    текущий пользователь.
 
     Methods:
         - get(request): Получение списка подписок текущего пользователя.

@@ -13,7 +13,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     Attributes:
         - is_subscribed (SerializerMethodField): Возвращает информацию о том,
-        подписан ли текущий пользователь на пользователя, который сериализуется.
+        подписан ли текущий пользователь на пользователя,
+        который сериализуется.
 
     Meta:
         - model (User): Модель пользователя.
@@ -63,13 +64,15 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, target_user):
         """
-        Возвращает информацию о подписке текущего пользователя на целевого пользователя.
+        Возвращает информацию о подписке текущего пользователя на
+        целевого пользователя.
 
         Args:
             target_user (User): Пользователь, на которого проверяется подписка.
 
         Returns:
-            bool: True, если текущий пользователь подписан на целевого пользователя, в противном случае - False.
+            bool: True, если текущий пользователь подписан на целевого
+            пользователя, в противном случае - False.
 
         """
         subscriber = self.context.get('request').user
@@ -84,7 +87,8 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
     """
     Сериализатор для пользователя и его подписок.
 
-    Позволяет просматривать информацию о пользователе, его подписках и количестве рецептов.
+    Позволяет просматривать информацию о пользователе, его подписках
+    и количестве рецептов.
 
     Attributes:
         - email (serializers.EmailField): Email пользователя.
@@ -92,9 +96,12 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
         - first_name (serializers.CharField): Имя пользователя.
         - last_name (serializers.CharField): Фамилия пользователя.
         - is_subscribed (SerializerMethodField): Возвращает информацию о том,
-        подписан ли текущий пользователь на пользователя, который сериализуется.
-        - recipes_count (SerializerMethodField): Количество рецептов пользователя.
-        - recipes (SerializerMethodField): Сериализованные рецепты пользователя.
+        подписан ли текущий пользователь на пользователя,
+        который сериализуется.
+        - recipes_count (SerializerMethodField): Количество рецептов
+        пользователя.
+        - recipes (SerializerMethodField): Сериализованные рецепты
+        пользователя.
 
     Meta:
         - model (User): Модель пользователя.
@@ -103,9 +110,12 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
     Methods:
         - get_is_subscribed(target_user): Возвращает информацию о подписке
         текущего пользователя на целевого пользователя.
-        - get_recipes_count(author): Возвращает количество рецептов пользователя.
-        - get_recipes(author): Возвращает сериализованные рецепты пользователя.
-        - validate(data): Проверяет, что пользователь не пытается подписаться на самого себя.
+        - get_recipes_count(author): Возвращает количество
+        рецептов пользователя.
+        - get_recipes(author): Возвращает сериализованные
+        рецепты пользователя.
+        - validate(data): Проверяет, что пользователь не
+        пытается подписаться на самого себя.
     """
     email = serializers.EmailField(required=False)
     username = serializers.CharField(required=False)
@@ -130,7 +140,8 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, target_user):
         """
-        Возвращает информацию о подписке текущего пользователя на целевого пользователя.
+        Возвращает информацию о подписке текущего пользователя на
+        целевого пользователя.
 
         Args:
             target_user (User или list): Пользователь или список
@@ -138,7 +149,8 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
 
         Returns:
             bool: True, если текущий пользователь подписан на целевого
-            пользователя (или на всех пользователей в списке, если передан список), в противном случае - False.
+            пользователя (или на всех пользователей в списке, если передан
+            список), в противном случае - False.
         """
         subscriber = self.context.get('request').user
         if isinstance(target_user, User):
@@ -158,7 +170,8 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
         Возвращает количество рецептов пользователя.
 
         Args:
-            author (User): Пользователь, для которого подсчитывается количество рецептов.
+            author (User): Пользователь, для которого подсчитывается
+            количество рецептов.
 
         Returns:
             int: Количество рецептов пользователя.
@@ -180,15 +193,16 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
 
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit')
-        recipes = author.recipes.all()[
-                  :int(limit)] if limit else author.recipes.all()
+        recipes = author.recipes.all()[:int(limit)] if limit else (
+            author.recipes.all())
         serializer = ShortRecipeReadSerializer(recipes, many=True,
                                                read_only=True)
         return serializer.data
 
     def validate(self, data):
         """
-        Проверяет, что пользователь уже подписан или не пытается подписаться на самого себя.
+        Проверяет, что пользователь уже подписан или не пытается
+        подписаться на самого себя.
 
         Args:
             data (dict): Данные для валидации.

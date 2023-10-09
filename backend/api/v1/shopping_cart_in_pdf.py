@@ -7,13 +7,15 @@ from recipes.models import RecipeEssentials, Recipe
 
 def generate_shopping_list_pdf(user):
     """
-        Генерирует PDF-список покупок на основе рецептов, находящихся в корзине пользователя.
+    Генерирует PDF-список покупок на основе рецептов, находящихся в
+    корзине пользователя.
 
-        Args:
-            user (User): Пользователь, для которого генерируется список покупок.
+    Args:
+        user (User): Пользователь, для которого генерируется список покупок.
 
-        Returns:
-            HttpResponse: HTTP-ответ с PDF-списком покупок в формате application/pdf.
+    Returns:
+        HttpResponse: HTTP-ответ с PDF-списком покупок в формате
+        application/pdf.
     """
     recipes_in_cart = Recipe.objects.filter(shopping_recipe__user=user)
 

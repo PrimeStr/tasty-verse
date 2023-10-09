@@ -77,8 +77,10 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             author (UserSerializer): Сериализатор для автора рецепта.
             ingredients (list of dict): Список ингредиентов рецепта.
             image (str): Изображение рецепта в формате Base64.
-            is_favorited (bool): Указывает, добавлен ли рецепт в избранное текущим пользователем.
-            is_in_shopping_cart (bool): Указывает, добавлен ли рецепт в корзину текущим пользователем.
+            is_favorited (bool): Указывает, добавлен ли рецепт в избранное
+            текущим пользователем.
+            is_in_shopping_cart (bool): Указывает, добавлен ли рецепт в
+            корзину текущим пользователем.
     """
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
@@ -127,7 +129,8 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         """"""
         user = self.context.get('request').user
         if user.is_authenticated:
-            return ShoppingCart.objects.filter(user=user, recipe=recipe).exists()
+            return ShoppingCart.objects.filter(user=user,
+                                               recipe=recipe).exists()
         return False
 
 
@@ -157,7 +160,8 @@ class RecipePostSerializer(serializers.ModelSerializer):
             id (int, read-only): Идентификатор рецепта.
             tags (TagSerializer): Сериализатор для тегов рецепта.
             author (UserSerializer): Сериализатор для автора рецепта.
-            ingredients (RecipeEssentialsSerializer): Сериализатор для ингредиентов рецепта.
+            ingredients (RecipeEssentialsSerializer): Сериализатор для
+            ингредиентов рецепта.
             image (str): Изображение рецепта в формате Base64.
             name (str): Название рецепта.
             text (str): Описание рецепта.
