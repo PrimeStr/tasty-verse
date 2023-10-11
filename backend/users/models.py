@@ -36,6 +36,14 @@ class User(AbstractUser):
         (USER, USER),
         (ADMIN, ADMIN)
     )
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = [
+        'username',
+        'first_name',
+        'last_name',
+    ]
+
     username = models.CharField(
         'Имя пользователя',
         validators=(validate_username,),

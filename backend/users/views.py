@@ -62,17 +62,15 @@ class CustomUserViewSet(UserViewSet):
         Returns:
             Response: Список подписок с данными о пользователях.
         """
-        subscriber = request.user
-        queryset = User.objects.filter(subscriber__subscriber=subscriber)
-        paginator = self.pagination_class()
-        queryset = paginator.paginate_queryset(queryset, request)
+        queryset = User.objects.filter(target_user__subscriber=request.user)
+        queryset = self.paginate_queryset(queryset)
 
         serializer = UserSubscriptionSerializer(
             queryset,
             many=True,
             context={'request': request}
         )
-        return paginator.get_paginated_response(serializer.data)
+        return self.get_paginated_response(serializer.data)
 
     @action(
         detail=True,
