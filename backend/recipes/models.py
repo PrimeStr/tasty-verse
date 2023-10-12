@@ -6,7 +6,8 @@ from django.db.models import UniqueConstraint
 
 from core.constants.recipes import (COLORFIELD_LENGTH, INGREDIENT_LENGTH,
                                     RECIPE_NAME_LENGTH, TAG_LENGTH,
-                                    MIN_COOKING_TIME, MAX_COOKING_TIME)
+                                    MIN_COOKING_TIME, MAX_COOKING_TIME,
+                                    MIN_INGREDIENT_AMOUNT, MAX_INGREDIENT_AMOUNT)
 from users.models import User
 
 
@@ -224,6 +225,14 @@ class RecipeEssentials(models.Model):
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество ингредиентов',
         default=1,
+        validators=[
+            MinValueValidator(MIN_INGREDIENT_AMOUNT,
+                              message=f'Количество ингредиента должно быть не '
+                                      f'менее {MIN_INGREDIENT_AMOUNT} ед.'),
+            MaxValueValidator(MAX_INGREDIENT_AMOUNT,
+                              message=f'Количество ингредиента должно быть не '
+                                      f'менее {MAX_INGREDIENT_AMOUNT} ед.'),
+        ]
     )
 
     class Meta:
@@ -234,7 +243,28 @@ class RecipeEssentials(models.Model):
         return f'{self.ingredient} – {self.amount}'
 
 
-class Favorite(models.Model):
+class UserRecipeRelation(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+
+        verbose_name='Пользователь',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+
+        verbose_name='Рецепт',
+    )
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return f'{self.user} -> {self.recipe}'
+
+
+class Favorite(UserRecipeRelation):
     """
     Модель избранных рецептов.
 
@@ -251,20 +281,8 @@ class Favorite(models.Model):
     Методы:
     - __str__(): Возвращает строковое представление избранного рецепта.
     """
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='favorites_user',
-        verbose_name='Пользователь',
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='favorites_recipe',
-        verbose_name='Рецепт',
-    )
     add_date = models.DateTimeField(
-        verbose_name='Дата публикации',
+        verbose_name='Дата добавления в избранное',
         auto_now_add=True,
         editable=False
     )
@@ -273,17 +291,14 @@ class Favorite(models.Model):
         verbose_name = 'Избранный рецепт'
         verbose_name_plural = 'Избранные рецепты'
         constraints = [
-            UniqueConstraint(
+            models.UniqueConstraint(
                 fields=('user', 'recipe'),
                 name='Рецепт уже в избранном!',
             )
         ]
 
-    def __str__(self):
-        return f'{self.user} -> {self.recipe}'
 
-
-class ShoppingCart(models.Model):
+class ShoppingCart(UserRecipeRelation):
     """
     Модель списка покупок.
 
@@ -299,18 +314,6 @@ class ShoppingCart(models.Model):
     Методы:
     - __str__(): Возвращает строковое представление записи списка покупок.
     """
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='shopping_user',
-        verbose_name='Корзина пользователя',
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='shopping_recipe',
-        verbose_name='Рецепт',
-    )
 
     class Meta:
         verbose_name = 'Список покупок'
@@ -321,6 +324,3 @@ class ShoppingCart(models.Model):
                 name='Рецепт уже в корзине!',
             )
         ]
-
-    def __str__(self):
-        return f'{self.user} -> {self.recipe}'

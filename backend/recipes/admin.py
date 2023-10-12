@@ -159,7 +159,8 @@ class FavoriteAdmin(admin.ModelAdmin):
     """
     list_display = (
         'user',
-        'recipe'
+        'recipe',
+        'add_date'
     )
     list_filter = ('user', 'recipe')
     search_fields = ('user', 'recipe')

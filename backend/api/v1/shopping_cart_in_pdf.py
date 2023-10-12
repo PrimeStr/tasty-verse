@@ -17,22 +17,24 @@ def generate_shopping_list_pdf(user):
         HttpResponse: HTTP-ответ с PDF-списком покупок в формате
         application/pdf.
     """
-    recipes_in_cart = Recipe.objects.filter(shopping_recipe__user=user)
+    recipes_in_cart = Recipe.objects.filter(shoppingcart__user=user)
 
     ingredients = RecipeEssentials.objects.filter(
         recipe__in=recipes_in_cart
     ).values(
         'ingredient__name',
         'ingredient__measurement_unit'
-    ).annotate(total_amount=Sum('amount'))
+    ).annotate(total_amount=Sum('amount')).order_by('ingredient__name')
 
     html_content = '<h1>Мой список покупок</h1><ul>'
-    for ingredient in ingredients:
-        ingredient_name = ingredient['ingredient__name']
-        measurement_unit = ingredient['ingredient__measurement_unit']
-        total_amount = ingredient['total_amount']
-        html_content += (f'<li>{ingredient_name} ({measurement_unit}) - '
-                         f'{total_amount}</li>')
+    html_content += ''.join([
+        f'<li>{ingredient["ingredient__name"]} '
+        f'({ingredient["ingredient__measurement_unit"]}) - '
+        f'{ingredient["total_amount"]}</li>'
+        for ingredient in ingredients.values('ingredient__name',
+                                             'ingredient__measurement_unit',
+                                             'total_amount')
+    ])
     html_content += '</ul>'
     html_content += ('<div style="position: absolute; bottom: '
                      '100px; width: 100%; text-align: center; '

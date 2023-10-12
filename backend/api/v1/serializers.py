@@ -54,7 +54,6 @@ class ShortRecipeReadSerializer(serializers.ModelSerializer):
             image (str): Изображение рецепта в формате Base64.
             cooking_time (int): Время приготовления рецепта в минутах.
     """
-    """"""
     image = Base64ImageField()
 
     class Meta:

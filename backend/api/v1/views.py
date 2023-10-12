@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.v1.filters import IngredientFilter, RecipeFilter
-from api.v1.permissions import IsAuthorOrAdminOrReadOnly
+from api.v1.permissions import IsAuthorOrAdminOrAuthOrReadOnly
 from api.v1.serializers import (IngredientSerializer, RecipePostSerializer,
                                 RecipeReadSerializer, TagSerializer,
                                 ShortRecipeReadSerializer)
@@ -68,7 +68,7 @@ class RecipesAPIView(APIView):
         о конкретном рецепте.
 
     """
-    permission_classes = (IsAuthorOrAdminOrReadOnly,)
+    permission_classes = (IsAuthorOrAdminOrAuthOrReadOnly,)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
 
@@ -115,7 +115,7 @@ class RecipesDetailAPIView(APIView):
         Response: JSON-сериализованная информация о рецепте.
 
     """
-    permission_classes = (IsAuthorOrAdminOrReadOnly,)
+    permission_classes = (IsAuthorOrAdminOrAuthOrReadOnly,)
 
     def get(self, request, pk):
         queryset = get_object_or_404(Recipe, id=pk)

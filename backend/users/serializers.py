@@ -75,8 +75,8 @@ class UserSerializer(serializers.ModelSerializer):
             пользователя, в противном случае - False.
 
         """
-        subscriber = self.context.get('request').user
-        if subscriber.is_authenticated:
+        #subscriber = self.context.get('request').user
+        if (subscriber := self.context.get('request').user).is_authenticated:
             return Subscription.objects.filter(
                 subscriber=subscriber, target_user=target_user
             ).exists()
@@ -152,14 +152,13 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
             пользователя (или на всех пользователей в списке, если передан
             список), в противном случае - False.
         """
-        subscriber = self.context.get('request').user
         if isinstance(target_user, User):
-            if subscriber.is_anonymous:
+            if (subscriber := self.context.get('request').user).is_anonymous:
                 return False
             return bool(target_user.subscriber.filter(subscriber=subscriber))
 
         elif isinstance(target_user, list):
-            if subscriber.is_anonymous:
+            if (subscriber := self.context.get('request').user).is_anonymous:
                 return False
             return Subscription.objects.filter(
                 subscriber=subscriber, target_user=target_user

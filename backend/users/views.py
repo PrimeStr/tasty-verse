@@ -74,7 +74,7 @@ class CustomUserViewSet(UserViewSet):
 
     @action(
         detail=True,
-        methods=['delete', 'post'],
+        methods=['post'],
         permission_classes=(IsAuthenticated,),
     )
     def subscribe(self, request, **kwargs):
@@ -92,35 +92,30 @@ class CustomUserViewSet(UserViewSet):
         subscriber = request.user
         target_user_id = self.kwargs.get('id')
         target_user = get_object_or_404(User, id=target_user_id)
-
-        if request.method == 'POST':
-            serializer = UserSubscriptionSerializer(
-                target_user,
-                data=request.data,
-                context={'request': request}
-            )
-            serializer.is_valid(raise_exception=True)
-            Subscription.objects.create(subscriber=subscriber,
-                                        target_user=target_user)
-            serializer = UserSubscriptionSerializer(
-                target_user,
-                context={'request': request}
-            )
+        serializer = UserSubscriptionSerializer(
+            target_user,
+            data={'subscriber': subscriber, 'target_user': target_user},
+            context={'request': request}
+        )
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
-        if request.method == 'DELETE':
-            subscription = Subscription.objects.filter(
-                subscriber=subscriber,
-                target_user=target_user
-            )
-
-            if subscription.exists():
-                subscription.delete()
-                return Response('Подписка удалена',
-                                status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response('Подписка не найдена',
-                                status=status.HTTP_404_NOT_FOUND)
+    @subscribe.mapping.delete
+    def delete_subscription(self, request, **kwargs):
+        subscriber = request.user
+        target_user = get_object_or_404(User, id=self.kwargs.get('id'))
+        subscription = Subscription.objects.filter(
+            subscriber=subscriber,
+            target_user=target_user
+        )
+        if subscription.exists():
+            subscription.delete()
+            return Response('Подписка удалена',
+                            status=status.HTTP_204_NO_CONTENT)
+        return Response('Подписка не найдена',
+                        status=status.HTTP_404_NOT_FOUND)
 
     @action(
         detail=False,
@@ -153,8 +148,7 @@ class UserSubscriptionsView(APIView):
         - get(request): Получение списка подписок текущего пользователя.
     """
     def get(self, request):
-        user = request.user
-        queryset = User.objects.filter(subscriber__subscriber=user)
+        queryset = User.objects.filter(subscriber__subscriber=request.user)
         serializer = UserSubscriptionSerializer(queryset, many=True,
                                                 context={'request': request})
         return Response(serializer.data)
