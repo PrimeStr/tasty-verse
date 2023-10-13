@@ -75,7 +75,6 @@ class UserSerializer(serializers.ModelSerializer):
             пользователя, в противном случае - False.
 
         """
-        #subscriber = self.context.get('request').user
         if (subscriber := self.context.get('request').user).is_authenticated:
             return Subscription.objects.filter(
                 subscriber=subscriber, target_user=target_user

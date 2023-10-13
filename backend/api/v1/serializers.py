@@ -116,15 +116,17 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, recipe):
         """Указывает, добавлен ли рецепт в избранное текущим пользователем."""
-        return ((user := self.context.get('request').user) and
-                user.is_authenticated and
-                Favorite.objects.filter(user=user, recipe=recipe).exists())
+        return ((user := self.context.get('request').user)
+                and user.is_authenticated
+                and Favorite.objects.filter(user=user,
+                                            recipe=recipe).exists())
 
     def get_is_in_shopping_cart(self, recipe):
         """Указывает, добавлен ли рецепт в корзину текущим пользователем."""
-        return ((user := self.context.get('request').user) and
-                user.is_authenticated and
-                ShoppingCart.objects.filter(user=user, recipe=recipe).exists())
+        return ((user := self.context.get('request').user)
+                and user.is_authenticated
+                and ShoppingCart.objects.filter(user=user,
+                                                recipe=recipe).exists())
 
 
 class RecipeEssentialsSerializer(serializers.ModelSerializer):

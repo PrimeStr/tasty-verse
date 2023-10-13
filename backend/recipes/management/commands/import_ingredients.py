@@ -8,7 +8,8 @@ from recipes.models import Ingredient
 
 class Command(BaseCommand):
     """
-    Команда управления Django для импорта данных из CSV-файла в модель Ingredient.
+    Команда управления Django для импорта данных из CSV-файла в
+    модель Ingredient.
 
     Эта команда читает данные из CSV-файла и импортирует их в модель Ingredient
     в базе данных.

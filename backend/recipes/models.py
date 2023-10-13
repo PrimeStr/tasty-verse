@@ -7,7 +7,8 @@ from django.db.models import UniqueConstraint
 from core.constants.recipes import (COLORFIELD_LENGTH, INGREDIENT_LENGTH,
                                     RECIPE_NAME_LENGTH, TAG_LENGTH,
                                     MIN_COOKING_TIME, MAX_COOKING_TIME,
-                                    MIN_INGREDIENT_AMOUNT, MAX_INGREDIENT_AMOUNT)
+                                    MIN_INGREDIENT_AMOUNT,
+                                    MAX_INGREDIENT_AMOUNT)
 from users.models import User
 
 

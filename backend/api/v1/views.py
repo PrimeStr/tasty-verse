@@ -75,7 +75,9 @@ class RecipesAPIView(APIView):
         serializer.save(author=self.request.user)
 
     def get(self, request):
-        queryset = Recipe.objects.select_related('author', 'ingredients', 'tags')
+        queryset = Recipe.objects.select_related('author',
+                                                 'ingredients',
+                                                 'tags')
         filterset = RecipeFilter(request.query_params, queryset=queryset,
                                  request=request)
         queryset = filterset.qs
