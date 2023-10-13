@@ -40,14 +40,13 @@ class TagsAPIView(APIView):
             queryset = Tag.objects.all()
             serializer = TagSerializer(queryset, many=True)
             return Response(serializer.data)
-        else:
-            try:
-                tag = Tag.objects.get(id=pk)
-                serializer = TagSerializer(tag)
-                return Response(serializer.data)
-            except Tag.DoesNotExist:
-                return Response({'detail': 'Тег не найден!'},
-                                status=status.HTTP_404_NOT_FOUND)
+        try:
+            tag = get_object_or_404(Tag, id=pk)
+            serializer = TagSerializer(tag)
+            return Response(serializer.data)
+        except Tag.DoesNotExist:
+            return Response({'detail': 'Тег не найден!'},
+                            status=status.HTTP_404_NOT_FOUND)
 
 
 class RecipesAPIView(APIView):
@@ -76,7 +75,7 @@ class RecipesAPIView(APIView):
         serializer.save(author=self.request.user)
 
     def get(self, request):
-        queryset = Recipe.objects.select_related('author')
+        queryset = Recipe.objects.select_related('author', 'ingredients', 'tags')
         filterset = RecipeFilter(request.query_params, queryset=queryset,
                                  request=request)
         queryset = filterset.qs
@@ -127,11 +126,8 @@ class RecipesDetailAPIView(APIView):
     def delete(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
         self.check_object_permissions(request, recipe)
-        try:
-            recipe.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Recipe.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        recipe.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def patch(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)

@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', get_random_secret_key())
 
-
+# Логирование для отлова ошибок на стадии разработки.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

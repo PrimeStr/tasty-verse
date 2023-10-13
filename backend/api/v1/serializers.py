@@ -5,6 +5,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField, IntegerField
 from rest_framework.relations import PrimaryKeyRelatedField
 
+from core.constants.recipes import MIN_INGREDIENT_AMOUNT
 from recipes.models import (Tag, Recipe, Favorite, ShoppingCart,
                             Ingredient, RecipeEssentials)
 from users.serializers import UserSerializer
@@ -37,7 +38,6 @@ class IngredientSerializer(serializers.ModelSerializer):
         Attributes:
             id (int, read-only): Идентификатор ингредиента.
     """
-
     class Meta:
         model = Ingredient
         fields = '__all__'
@@ -46,13 +46,13 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class ShortRecipeReadSerializer(serializers.ModelSerializer):
     """
-        Краткий сериализатор для модели Recipe.
+    Краткий сериализатор для модели Recipe.
 
-        Attributes:
-            id (int, read-only): Идентификатор рецепта.
-            name (str): Название рецепта.
-            image (str): Изображение рецепта в формате Base64.
-            cooking_time (int): Время приготовления рецепта в минутах.
+    Attributes:
+        id (int, read-only): Идентификатор рецепта.
+        name (str): Название рецепта.
+        image (str): Изображение рецепта в формате Base64.
+        cooking_time (int): Время приготовления рецепта в минутах.
     """
     image = Base64ImageField()
 
@@ -105,7 +105,6 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     def get_ingredients(self, obj):
         """Возвращает список ингредиентов рецепта в виде списка словарей."""
-        """"""
         recipe = obj
         ingredients = recipe.ingredients.values(
             'id',
@@ -117,20 +116,15 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, recipe):
         """Указывает, добавлен ли рецепт в избранное текущим пользователем."""
-        """"""
-        user = self.context.get('request').user
-        if user.is_authenticated:
-            return Favorite.objects.filter(user=user, recipe=recipe).exists()
-        return False
+        return ((user := self.context.get('request').user) and
+                user.is_authenticated and
+                Favorite.objects.filter(user=user, recipe=recipe).exists())
 
     def get_is_in_shopping_cart(self, recipe):
         """Указывает, добавлен ли рецепт в корзину текущим пользователем."""
-        """"""
-        user = self.context.get('request').user
-        if user.is_authenticated:
-            return ShoppingCart.objects.filter(user=user,
-                                               recipe=recipe).exists()
-        return False
+        return ((user := self.context.get('request').user) and
+                user.is_authenticated and
+                ShoppingCart.objects.filter(user=user, recipe=recipe).exists())
 
 
 class RecipeEssentialsSerializer(serializers.ModelSerializer):
@@ -226,9 +220,10 @@ class RecipePostSerializer(serializers.ModelSerializer):
 
     def validate_ingredients(self, value):
         """Дополнительно проверяет наличие ингредиентов в рецепте."""
-        if not value:
+        if value < MIN_INGREDIENT_AMOUNT:
             raise ValidationError(
-                {"ingredients": "Нужен минимум 1 ингредиент!"})
+                {"ingredients": f"Нужен минимум "
+                                f"{MIN_INGREDIENT_AMOUNT} ингредиент!"})
         return value
 
     def validate_image(self, value):

@@ -244,6 +244,21 @@ class RecipeEssentials(models.Model):
 
 
 class UserRecipeRelation(models.Model):
+    """
+    Абстрактная модель для связи пользователя с рецептом.
+
+    Поля:
+        - user (ForeignKey): Пользователь.
+        - recipe (ForeignKey): Рецепт.
+
+    Методы:
+        - __str__(): Возвращает строковое представление связи
+        пользователя с рецептом.
+
+    Это абстрактная модель, которая служит базой для других моделей, таких
+    как "Favorite" и "ShoppingCart", представляющих отношения между
+    пользователями и рецептами.
+    """
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
