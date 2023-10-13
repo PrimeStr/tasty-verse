@@ -97,6 +97,10 @@ class CustomUserViewSet(UserViewSet):
             data={'subscriber': subscriber, 'target_user': target_user},
             context={'request': request}
         )
+
+        # В этом месте теперь возникает проблема. После замены
+        # Subscription.objects.create на serializer.save()
+
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
