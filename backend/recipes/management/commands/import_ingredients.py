@@ -2,7 +2,6 @@ import csv
 from typing import Any
 
 from django.core.management.base import BaseCommand
-from django.db.utils import IntegrityError
 
 from recipes.models import Ingredient
 
@@ -71,4 +70,3 @@ class Command(BaseCommand):
 
         Ingredient.objects.bulk_create(ingredients_to_create,
                                        ignore_conflicts=True)
-

@@ -78,14 +78,12 @@ class UserSerializer(serializers.ModelSerializer):
             пользователя, в противном случае - False.
 
         """
-        return (
-                (subscriber := self.context.get('request').user)
+        return ((subscriber := self.context.get('request').user)
                 and subscriber.is_authenticated
                 and Subscription.objects.filter(
-            subscriber=subscriber,
-            target_user=target_user
-        ).exists()
-        )
+                    subscriber=subscriber,
+                    target_user=target_user
+        ).exists())
 
 
 class ShortRecipeReadSerializer(serializers.ModelSerializer):
@@ -164,14 +162,12 @@ class UserSubscriptionListSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, target_user: User) -> bool:
-        return (
-                (subscriber := self.context.get('request').user)
+        return ((subscriber := self.context.get('request').user)
                 and subscriber.is_authenticated
                 and Subscription.objects.filter(
-            subscriber=subscriber,
-            target_user=target_user
-        ).exists()
-        )
+                    subscriber=subscriber,
+                    target_user=target_user
+        ).exists())
 
     @staticmethod
     def get_recipes_count(author: User) -> int:
