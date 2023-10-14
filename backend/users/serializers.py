@@ -1,7 +1,11 @@
+from typing import Dict, List
+
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
 
+from recipes.models import Recipe
 from users.models import User, Subscription
 
 
@@ -41,7 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {'password': {'write_only': True}}
 
-    def create(self, validated_data):
+    def create(self, validated_data: Dict) -> User:
         """
         Создает нового пользователя.
 
@@ -50,7 +54,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         Returns:
             User: Созданный пользователь.
-
         """
         user = User(
             email=validated_data['email'],
@@ -62,7 +65,7 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-    def get_is_subscribed(self, target_user):
+    def get_is_subscribed(self, target_user: User) -> bool:
         """
         Возвращает информацию о подписке текущего пользователя на
         целевого пользователя.
@@ -75,18 +78,43 @@ class UserSerializer(serializers.ModelSerializer):
             пользователя, в противном случае - False.
 
         """
-        if (subscriber := self.context.get('request').user).is_authenticated:
-            return Subscription.objects.filter(
-                subscriber=subscriber, target_user=target_user
-            ).exists()
-        return False
+        return (
+                (subscriber := self.context.get('request').user)
+                and subscriber.is_authenticated
+                and Subscription.objects.filter(
+            subscriber=subscriber,
+            target_user=target_user
+        ).exists()
+        )
 
 
-class UserSubscriptionSerializer(serializers.ModelSerializer):
+class ShortRecipeReadSerializer(serializers.ModelSerializer):
     """
-    Сериализатор для пользователя и его подписок.
+    Краткий сериализатор для модели Recipe.
 
-    Позволяет просматривать информацию о пользователе, его подписках
+    Attributes:
+        id (int, read-only): Идентификатор рецепта.
+        name (str): Название рецепта.
+        image (str): Изображение рецепта в формате Base64.
+        cooking_time (int): Время приготовления рецепта в минутах.
+    """
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'name',
+            'image',
+            'cooking_time',
+        )
+
+
+class UserSubscriptionListSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для списка пользователей и их подписок.
+
+    Позволяет просматривать информацию о пользователях, их подписках
     и количестве рецептов.
 
     Attributes:
@@ -113,8 +141,6 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
         рецептов пользователя.
         - get_recipes(author): Возвращает сериализованные
         рецепты пользователя.
-        - validate(data): Проверяет, что пользователь не
-        пытается подписаться на самого себя.
     """
     email = serializers.EmailField(required=False)
     username = serializers.CharField(required=False)
@@ -137,33 +163,18 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
             'recipes_count',
         )
 
-    def get_is_subscribed(self, target_user):
-        """
-        Возвращает информацию о подписке текущего пользователя на
-        целевого пользователя.
+    def get_is_subscribed(self, target_user: User) -> bool:
+        return (
+                (subscriber := self.context.get('request').user)
+                and subscriber.is_authenticated
+                and Subscription.objects.filter(
+            subscriber=subscriber,
+            target_user=target_user
+        ).exists()
+        )
 
-        Args:
-            target_user (User или list): Пользователь или список
-            пользователей, на которых проверяется подписка.
-
-        Returns:
-            bool: True, если текущий пользователь подписан на целевого
-            пользователя (или на всех пользователей в списке, если передан
-            список), в противном случае - False.
-        """
-        if isinstance(target_user, User):
-            if (subscriber := self.context.get('request').user).is_anonymous:
-                return False
-            return bool(target_user.subscriber.filter(subscriber=subscriber))
-
-        elif isinstance(target_user, list):
-            if (subscriber := self.context.get('request').user).is_anonymous:
-                return False
-            return Subscription.objects.filter(
-                subscriber=subscriber, target_user=target_user
-            ).exists()
-
-    def get_recipes_count(self, author):
+    @staticmethod
+    def get_recipes_count(author: User) -> int:
         """
         Возвращает количество рецептов пользователя.
 
@@ -176,7 +187,7 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
         """
         return author.recipes.count()
 
-    def get_recipes(self, author):
+    def get_recipes(self, author: User) -> List:
         """
         Возвращает сериализованные рецепты пользователя.
 
@@ -186,9 +197,6 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
         Returns:
             list: Список сериализованных рецептов пользователя.
         """
-        # Импорт внутри функции для избежания циклического импорта.
-        from api.v1.serializers import ShortRecipeReadSerializer
-
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit')
         recipes = author.recipes.all()[:int(limit)] if limit else (
@@ -197,7 +205,46 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
                                                read_only=True)
         return serializer.data
 
-    def validate(self, data):
+
+class UserSubscriptionSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели Subscription.
+
+    Позволяет создавать и валидировать подписки пользователей.
+
+    Attributes:
+        - subscriber (int): Идентификатор подписчика.
+        - target_user (int): Идентификатор целевого пользователя.
+    """
+
+    class Meta:
+        model = Subscription
+        fields = ['subscriber', 'target_user']
+        read_only_fields = ['subscriber', 'target_user']
+        extra_kwargs = {
+            'subscriber': {'required': False},
+            'target_user': {'required': False},
+        }
+
+    def create(self, validated_data) -> Subscription:
+        """
+        Создает новую подписку или возвращает существующую.
+
+        Args:
+            validated_data (dict): Валидированные данные.
+
+        Returns:
+            Subscription: Созданная или существующая подписка.
+        """
+        subscriber = self.context['subscriber']
+        target_user = self.context['target_user']
+        subscription, _ = Subscription.objects.get_or_create(
+            subscriber=subscriber,
+            target_user=target_user
+        )
+        return subscription
+
+    def validate(self, data: Dict) -> Dict:
         """
         Проверяет, что пользователь уже подписан или не пытается
         подписаться на самого себя.
@@ -212,10 +259,11 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
         Returns:
             dict: Валидированные данные.
         """
-        target_user = self.instance
-        subscriber = self.context.get('request').user
-        if Subscription.objects.filter(target_user=target_user,
-                                       subscriber=subscriber).exists():
+        target_user = self.context['target_user']
+        subscriber = self.context['subscriber']
+        if Subscription.objects.filter(subscriber=subscriber,
+                                       target_user=target_user
+                                       ).exists():
             raise ValidationError(
                 'Вы уже подписаны на этого пользователя!'
             )
@@ -224,3 +272,19 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
                 'Нельзя подписаться на самого себя!'
             )
         return data
+
+    def to_representation(self, instance: Subscription) -> Dict:
+        """
+        Преобразует подписку в формат, удобный для отображения.
+
+        Args:
+            instance (Subscription): Подписка.
+
+        Returns:
+            dict: Валидированные данные для отображения.
+        """
+        target_user = instance.target_user
+        request = self.context.get('request')
+        context = {'request': request}
+        return UserSubscriptionListSerializer(target_user,
+                                              context=context).data

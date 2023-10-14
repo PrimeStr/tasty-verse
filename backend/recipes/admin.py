@@ -12,20 +12,19 @@ class TagAdmin(admin.ModelAdmin):
     Настроенная админ-панель Тегов.
 
     Список отображаемых полей:
-    - id
-    - name
-    - color
-    - slug
+        - id
+        - name
+        - color
+        - slug
 
     Поля для поиска:
-    - name
+        - name
 
     Фильтры:
-    - id
-    - name
-    - color
+        - id
+        - name
+        - color
     """
-
     list_display = (
         'id',
         'name',
@@ -42,23 +41,23 @@ class RecipeAdmin(admin.ModelAdmin):
     Настроенная админ-панель Рецептов.
 
     Список отображаемых полей:
-    - id
-    - author
-    - name
-    - image
-    - text
-    - cooking_time
+        - id
+        - author
+        - name
+        - image
+        - text
+        - cooking_time
 
     Поле "Пусто" отображается как "-пусто-".
 
     Поля для поиска:
-    - author
+        - author
 
     Фильтры:
-    - id
-    - author
-    - name
-    - tags
+        - id
+        - author
+        - name
+        - tags
     """
     list_display = (
         'id',
@@ -80,19 +79,19 @@ class RecipeEssentialsAdmin(admin.ModelAdmin):
     Настроенная админ-панель Ингредиентов в рецепте.
 
     Список отображаемых полей:
-    - id
-    - recipe
-    - ingredient
-    - amount
+        - id
+        - recipe
+        - ingredient
+        - amount
 
     Поля для поиска:
-    - ingredient
+        - ingredient
 
     Фильтры:
-    - id
-    - recipe
-    - ingredient
-    - amount
+        - id
+        - recipe
+        - ingredient
+        - amount
     """
     list_display = (
         'id',
@@ -106,33 +105,32 @@ class RecipeEssentialsAdmin(admin.ModelAdmin):
 
 class IngredientResource(resources.ModelResource):
     """
-        Ресурс для импорта/экспорта ингредиентов.
+    Ресурс для импорта/экспорта ингредиентов.
 
-        Мета:
+    Мета:
         - model (Ingredient): Модель ингредиента для импорта/экспорта.
-        """
-
+    """
     class Meta:
         model = Ingredient
 
 
 class IngredientAdmin(ImportExportModelAdmin):
     """
-        Настроенная админ-панель Ингредиентов.
+    Настроенная админ-панель Ингредиентов.
 
-        Ресурс класса:
+    Ресурс класса:
         - IngredientResource: Ресурс для импорта/экспорта ингредиентов.
 
-        Модель ингредиента:
+    Модель ингредиента:
         - id
         - name
         - measurement_unit
 
-        Мета:
+    Мета:
         - list_display (tuple): Список отображаемых полей.
         - search_fields (tuple): Поля для поиска.
         - list_filter (tuple): Фильтры.
-        """
+    """
     resource_classes = [IngredientResource]
 
     list_display = (
@@ -150,12 +148,12 @@ class FavoriteAdmin(admin.ModelAdmin):
     Настроенная админ-панель избранных рецептов у пользователей.
 
     Список отображаемых полей:
-    - user
-    - recipe
+        - user
+        - recipe
 
     Фильтры:
-    - user
-    - recipe
+        - user
+        - recipe
     """
     list_display = (
         'user',
@@ -172,12 +170,12 @@ class ShoppingCartAdmin(admin.ModelAdmin):
     Настроенная админ-панель корзин покупок у пользователей.
 
     Список отображаемых полей:
-    - user
-    - recipe
+        - user
+        - recipe
 
     Фильтры:
-    - user
-    - recipe
+        - user
+        - recipe
     """
     list_display = (
         'user',

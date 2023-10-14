@@ -16,11 +16,13 @@ class IsAdminOrReadOnly(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        return (request.method in permissions.SAFE_METHODS
-                or request.user.is_admin)
+        return (
+                request.method in permissions.SAFE_METHODS
+                or request.user.is_admin
+        )
 
 
-class IsAuthorOrAdminOrAuthOrReadOnly(permissions.BasePermission):
+class IsAuthorOrAdminOrAuthenticatedOrReadOnly(permissions.BasePermission):
     """
     Пользовательские разрешения для проверки авторства, администратора
     или только для чтения.
@@ -35,10 +37,16 @@ class IsAuthorOrAdminOrAuthOrReadOnly(permissions.BasePermission):
         - has_object_permission (method): Проверяет разрешение на
         уровне объекта.
     """
+
     def has_permission(self, request, view):
-        return (request.method in permissions.SAFE_METHODS
-                or request.user.is_authenticated)
+        return (
+                request.method in permissions.SAFE_METHODS
+                or request.user.is_authenticated
+        )
 
     def has_object_permission(self, request, view, obj):
-        return (request.method in permissions.SAFE_METHODS
-                or (obj.author == request.user or request.user.is_admin))
+        return (
+                request.method in permissions.SAFE_METHODS
+                or obj.author == request.user
+                or request.user.is_admin
+        )

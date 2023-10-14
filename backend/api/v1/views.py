@@ -1,4 +1,7 @@
+from typing import Any
+
 from django.db.utils import IntegrityError
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -8,14 +11,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.v1.filters import IngredientFilter, RecipeFilter
-from api.v1.permissions import IsAuthorOrAdminOrAuthOrReadOnly
+from api.v1.permissions import IsAuthorOrAdminOrAuthenticatedOrReadOnly
 from api.v1.serializers import (IngredientSerializer, RecipePostSerializer,
-                                RecipeReadSerializer, TagSerializer,
-                                ShortRecipeReadSerializer)
+                                RecipeReadSerializer, TagSerializer)
 from api.v1.shopping_cart_in_pdf import generate_shopping_list_pdf
 from core.pagination import CustomPagination
 from recipes.models import (Favorite, Ingredient, Recipe,
                             ShoppingCart, Tag)
+from users.serializers import ShortRecipeReadSerializer
 
 
 class TagsAPIView(APIView):
@@ -31,22 +34,18 @@ class TagsAPIView(APIView):
     Returns:
         Response: JSON-сериализованный список тегов или информация
         о конкретном теге.
-
     """
     permission_classes = (AllowAny,)
 
-    def get(self, request, pk=None):
+    @staticmethod
+    def get(request: Any, pk: Any = None) -> Response:
         if pk is None:
             queryset = Tag.objects.all()
             serializer = TagSerializer(queryset, many=True)
             return Response(serializer.data)
-        try:
-            tag = get_object_or_404(Tag, id=pk)
-            serializer = TagSerializer(tag)
-            return Response(serializer.data)
-        except Tag.DoesNotExist:
-            return Response({'detail': 'Тег не найден!'},
-                            status=status.HTTP_404_NOT_FOUND)
+        tag = get_object_or_404(Tag, id=pk)
+        serializer = TagSerializer(tag)
+        return Response(serializer.data)
 
 
 class RecipesAPIView(APIView):
@@ -67,17 +66,15 @@ class RecipesAPIView(APIView):
         о конкретном рецепте.
 
     """
-    permission_classes = (IsAuthorOrAdminOrAuthOrReadOnly,)
+    permission_classes = (IsAuthorOrAdminOrAuthenticatedOrReadOnly,)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
 
-    def perform_create(self, serializer, **kwargs):
+    def perform_create(self, serializer, **kwargs: Any) -> None:
         serializer.save(author=self.request.user)
 
-    def get(self, request):
-        queryset = Recipe.objects.select_related('author',
-                                                 'ingredients',
-                                                 'tags')
+    def get(self, request) -> Response:
+        queryset = Recipe.objects.select_related('author')
         filterset = RecipeFilter(request.query_params, queryset=queryset,
                                  request=request)
         queryset = filterset.qs
@@ -88,7 +85,8 @@ class RecipesAPIView(APIView):
                                       context={'request': request})
         return paginator.get_paginated_response(serializer.data)
 
-    def post(self, request):
+    @staticmethod
+    def post(request) -> Response:
         serializer = RecipePostSerializer(data=request.data,
                                           context={'request': request})
         serializer.is_valid(raise_exception=True)
@@ -116,22 +114,23 @@ class RecipesDetailAPIView(APIView):
         Response: JSON-сериализованная информация о рецепте.
 
     """
-    permission_classes = (IsAuthorOrAdminOrAuthOrReadOnly,)
+    permission_classes = (IsAuthorOrAdminOrAuthenticatedOrReadOnly,)
 
-    def get(self, request, pk):
+    @staticmethod
+    def get(request: Any, pk: Any) -> Response:
         queryset = get_object_or_404(Recipe, id=pk)
         serializer_class = RecipeReadSerializer
         serializer = serializer_class(queryset,
                                       context={'request': request})
         return Response(serializer.data)
 
-    def delete(self, request, pk):
+    def delete(self, request: Any, pk: Any) -> Response:
         recipe = get_object_or_404(Recipe, id=pk)
         self.check_object_permissions(request, recipe)
         recipe.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def patch(self, request, pk):
+    def patch(self, request, pk: Any) -> Response:
         recipe = get_object_or_404(Recipe, id=pk)
         self.check_object_permissions(request, recipe)
         serializer = RecipePostSerializer(recipe,
@@ -162,13 +161,14 @@ class FavoritesAPIView(APIView):
 
     """
 
-    def post(self, request, pk):
+    def post(self, request, pk: Any) -> Response:
         return self.add_recipe(Favorite, request.user, pk)
 
-    def delete(self, request, pk):
+    def delete(self, request, pk: Any) -> Response:
         return self.delete_recipe(Favorite, request.user, pk)
 
-    def add_recipe(self, model, user, pk):
+    @staticmethod
+    def add_recipe(model, user: Any, pk: Any) -> Response:
         try:
             recipe = get_object_or_404(Recipe, id=pk)
             model.objects.create(user=user, recipe=recipe)
@@ -178,14 +178,15 @@ class FavoritesAPIView(APIView):
             return Response({'errors': 'Рецепт уже в избранном!'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-    def delete_recipe(self, model, user, pk):
+    @staticmethod
+    def delete_recipe(model, user: Any, pk: Any) -> Response:
         try:
             obj = model.objects.get(user=user, recipe__id=pk)
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except model.DoesNotExist:
             return Response({'errors': 'Такого рецепта нет в избранном!'},
-                            status=status.HTTP_400_BAD_REQUEST)
+                            status=status.HTTP_404_NOT_FOUND)
 
 
 class ShoppingCartAPIView(APIView):
@@ -205,13 +206,14 @@ class ShoppingCartAPIView(APIView):
         Response: JSON-сериализованная информация о рецепте.
     """
 
-    def post(self, request, pk):
+    def post(self, request, pk: Any) -> Response:
         return self.add_recipe(ShoppingCart, request.user, pk)
 
-    def delete(self, request, pk):
+    def delete(self, request, pk: Any) -> Response:
         return self.delete_recipe(ShoppingCart, request.user, pk)
 
-    def add_recipe(self, model, user, pk):
+    @staticmethod
+    def add_recipe(model, user: Any, pk: Any) -> Response:
         try:
             recipe = get_object_or_404(Recipe, id=pk)
             model.objects.create(user=user, recipe=recipe)
@@ -221,14 +223,15 @@ class ShoppingCartAPIView(APIView):
             return Response({'errors': 'Рецепт уже в корзине!'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-    def delete_recipe(self, model, user, pk):
+    @staticmethod
+    def delete_recipe(model, user: Any, pk: Any) -> Response:
         try:
-            obj = model.objects.get(user=user, recipe__id=pk)
-            obj.delete()
+            recipe = model.objects.get(user=user, recipe__id=pk)
+            recipe.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except model.DoesNotExist:
             return Response({'errors': 'Такого рецепта нет в корзине!'},
-                            status=status.HTTP_400_BAD_REQUEST)
+                            status=status.HTTP_404_NOT_FOUND)
 
 
 class DownloadShoppingCart(APIView):
@@ -241,8 +244,8 @@ class DownloadShoppingCart(APIView):
     Returns:
         Response: PDF-файл списка покупок.
     """
-
-    def get(self, request):
+    @staticmethod
+    def get(request) -> HttpResponse:
         user = request.user
         shopping_list = generate_shopping_list_pdf(user)
         return shopping_list

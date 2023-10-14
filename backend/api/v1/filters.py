@@ -21,12 +21,12 @@ class RecipeFilter(FilterSet):
     """
 
     is_favorited = NumberFilter(
-        field_name='favorites_recipe__user',
+        field_name='favorite__user',
         method='filter_users_lists',
         label='is_favorited'
     )
     is_in_shopping_cart = NumberFilter(
-        field_name='shopping_recipe__user',
+        field_name='shoppingcart__user',
         method='filter_users_lists',
         label='is_in_shopping_cart'
     )
@@ -98,4 +98,4 @@ class IngredientFilter(FilterSet):
 
     class Meta:
         model = Ingredient
-        fields = ('name', )
+        fields = ('name',)

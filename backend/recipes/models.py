@@ -18,16 +18,16 @@ class Ingredient(models.Model):
     многих рецептов.
 
     Поля:
-    - name (CharField): Название ингредиента для рецепта.
-    - measurement_unit (CharField): Единица измерения для ингредиента.
+        - name (CharField): Название ингредиента для рецепта.
+        - measurement_unit (CharField): Единица измерения для ингредиента.
 
     Мета:
-    - verbose_name (str): Название модели в единственном числе.
-    - verbose_name_plural (str): Название модели во множественном числе.
-    - ordering (list): Сортировка объектов модели по умолчанию.
+        - verbose_name (str): Название модели в единственном числе.
+        - verbose_name_plural (str): Название модели во множественном числе.
+        - ordering (list): Сортировка объектов модели по умолчанию.
 
     Методы:
-    - __str__(): Возвращает строковое представление ингредиента в формате -
+        - __str__(): Возвращает строковое представление ингредиента в формате -
         "Название, Единица измерения".
     """
     name = models.CharField(
@@ -60,17 +60,17 @@ class Tag(models.Model):
     Модель тега для рецепта.
 
     Поля:
-    - name (CharField): Название тега для рецепта.
-    - color (ColorField): Цвет в формате HEX.
-    - slug (SlugField): Slug названия тега.
+        - name (CharField): Название тега для рецепта.
+        - color (ColorField): Цвет в формате HEX.
+        - slug (SlugField): Slug названия тега.
 
     Мета:
-    - verbose_name (str): Название модели в единственном числе.
-    - verbose_name_plural (str): Название модели во множественном числе.
-    - ordering (list): Сортировка объектов модели по умолчанию.
+        - verbose_name (str): Название модели в единственном числе.
+        - verbose_name_plural (str): Название модели во множественном числе.
+        - ordering (list): Сортировка объектов модели по умолчанию.
 
     Методы:
-    - __str__(): Возвращает строковое представление тега.
+        - __str__(): Возвращает строковое представление тега.
     """
     name = models.CharField(
         verbose_name='Название тега для рецепта',
@@ -120,23 +120,23 @@ class Recipe(models.Model):
     Модель рецепта.
 
     Поля:
-    - tags (ManyToManyField): Теги, связанные с рецептом.
-    - author (ForeignKey): Автор рецепта.
-    - ingredients (ManyToManyField): Ингредиенты блюда (через промежуточную
+        - tags (ManyToManyField): Теги, связанные с рецептом.
+        - author (ForeignKey): Автор рецепта.
+        - ingredients (ManyToManyField): Ингредиенты блюда (через промежуточную
         модель RecipeEssentials).
-    - name (CharField): Название рецепта.
-    - image (ImageField): Изображение рецепта.
-    - pub_date (DateTimeField): Дата публикации рецепта.
-    - text (TextField): Описание рецепта.
-    - cooking_time (PositiveSmallIntegerField): Время приготовления.
+        - name (CharField): Название рецепта.
+        - image (ImageField): Изображение рецепта.
+        - pub_date (DateTimeField): Дата публикации рецепта.
+        - text (TextField): Описание рецепта.
+        - cooking_time (PositiveSmallIntegerField): Время приготовления.
 
     Мета:
-    - verbose_name (str): Название модели в единственном числе.
-    - verbose_name_plural (str): Название модели во множественном числе.
-    - ordering (list): Сортировка объектов модели по умолчанию.
+        - verbose_name (str): Название модели в единственном числе.
+        - verbose_name_plural (str): Название модели во множественном числе.
+        - ordering (list): Сортировка объектов модели по умолчанию.
 
     Методы:
-    - __str__(): Возвращает строковое представление рецепта.
+        - __str__(): Возвращает строковое представление рецепта.
     """
     tags = models.ManyToManyField(
         Tag,
@@ -200,17 +200,17 @@ class RecipeEssentials(models.Model):
     Промежуточная модель для связи рецепта(Recipe) и ингредиентов(Ingredient).
 
     Поля:
-    - recipe (ForeignKey): Рецепт.
-    - ingredient (ForeignKey): Ингредиент.
-    - amount (PositiveSmallIntegerField): Количество ингредиентов.
+        - recipe (ForeignKey): Рецепт.
+        - ingredient (ForeignKey): Ингредиент.
+        - amount (PositiveSmallIntegerField): Количество ингредиентов.
 
     Мета:
-    - verbose_name (str): Название модели в единственном числе.
-    - verbose_name_plural (str): Название модели во множественном числе.
+        - verbose_name (str): Название модели в единственном числе.
+        - verbose_name_plural (str): Название модели во множественном числе.
 
     Методы:
-    - __str__(): Возвращает строковое представление ингредиента
-    и его количества.
+        - __str__(): Возвращает строковое представление ингредиента
+        и его количества.
     """
     recipe = models.ForeignKey(
         Recipe,
@@ -285,17 +285,17 @@ class Favorite(UserRecipeRelation):
     Модель избранных рецептов.
 
     Поля:
-    - user (ForeignKey): Пользователь.
-    - recipe (ForeignKey): Рецепт.
-    - add_date (DateTimeField): Дата добавления в избранное.
+        - user (ForeignKey): Пользователь.
+        - recipe (ForeignKey): Рецепт.
+        - add_date (DateTimeField): Дата добавления в избранное.
 
     Мета:
-    - verbose_name (str): Название модели в единственном числе.
-    - verbose_name_plural (str): Название модели во множественном числе.
-    - constraints (list): Ограничения для уникальности записей.
+        - verbose_name (str): Название модели в единственном числе.
+        - verbose_name_plural (str): Название модели во множественном числе.
+        - constraints (list): Ограничения для уникальности записей.
 
     Методы:
-    - __str__(): Возвращает строковое представление избранного рецепта.
+        - __str__(): Возвращает строковое представление избранного рецепта.
     """
     add_date = models.DateTimeField(
         verbose_name='Дата добавления в избранное',
@@ -319,16 +319,16 @@ class ShoppingCart(UserRecipeRelation):
     Модель списка покупок.
 
     Поля:
-    - user (ForeignKey): Пользователь.
-    - recipe (ForeignKey): Рецепт в корзине.
+        - user (ForeignKey): Пользователь.
+        - recipe (ForeignKey): Рецепт в корзине.
 
     Мета:
-    - verbose_name (str): Название модели в единственном числе.
-    - verbose_name_plural (str): Название модели во множественном числе.
-    - constraints (list): Ограничения для уникальности записей.
+        - verbose_name (str): Название модели в единственном числе.
+        - verbose_name_plural (str): Название модели во множественном числе.
+        - constraints (list): Ограничения для уникальности записей.
 
     Методы:
-    - __str__(): Возвращает строковое представление записи списка покупок.
+        - __str__(): Возвращает строковое представление записи списка покупок.
     """
 
     class Meta:

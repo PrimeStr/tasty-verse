@@ -11,7 +11,8 @@ from api.v1.filters import UserFilter
 from api.v1.permissions import IsAdminOrReadOnly
 from core.pagination import CustomPagination
 from users.models import Subscription, User
-from users.serializers import UserSerializer, UserSubscriptionSerializer
+from users.serializers import (UserSerializer, UserSubscriptionListSerializer,
+                               UserSubscriptionSerializer)
 
 
 class CustomUserViewSet(UserViewSet):
@@ -64,8 +65,7 @@ class CustomUserViewSet(UserViewSet):
         """
         queryset = User.objects.filter(target_user__subscriber=request.user)
         queryset = self.paginate_queryset(queryset)
-
-        serializer = UserSubscriptionSerializer(
+        serializer = UserSubscriptionListSerializer(
             queryset,
             many=True,
             context={'request': request}
@@ -89,18 +89,15 @@ class CustomUserViewSet(UserViewSet):
             Response: Статус операции или данные о пользователе
             (при создании подписки).
         """
-        subscriber = request.user
-        target_user_id = self.kwargs.get('id')
-        target_user = get_object_or_404(User, id=target_user_id)
+        target_user = get_object_or_404(User, id=self.kwargs.get('id'))
         serializer = UserSubscriptionSerializer(
-            target_user,
-            data={'subscriber': subscriber, 'target_user': target_user},
-            context={'request': request}
+            data=request.data,
+            context={
+                'subscriber': request.user,
+                'target_user': target_user,
+                'request': request
+            }
         )
-
-        # В этом месте теперь возникает проблема. После замены
-        # Subscription.objects.create на serializer.save()
-
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -108,18 +105,12 @@ class CustomUserViewSet(UserViewSet):
 
     @subscribe.mapping.delete
     def delete_subscription(self, request, **kwargs):
-        subscriber = request.user
         target_user = get_object_or_404(User, id=self.kwargs.get('id'))
-        subscription = Subscription.objects.filter(
-            subscriber=subscriber,
-            target_user=target_user
-        )
-        if subscription.exists():
-            subscription.delete()
-            return Response('Подписка удалена',
-                            status=status.HTTP_204_NO_CONTENT)
-        return Response('Подписка не найдена',
-                        status=status.HTTP_404_NOT_FOUND)
+        get_object_or_404(Subscription,
+                          subscriber=request.user,
+                          target_user=target_user).delete()
+        return Response('Подписка удалена',
+                        status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
@@ -151,8 +142,11 @@ class UserSubscriptionsView(APIView):
     Methods:
         - get(request): Получение списка подписок текущего пользователя.
     """
+
     def get(self, request):
         queryset = User.objects.filter(subscriber__subscriber=request.user)
-        serializer = UserSubscriptionSerializer(queryset, many=True,
-                                                context={'request': request})
+        serializer = UserSubscriptionListSerializer(
+            queryset, many=True,
+            context={'request': request}
+        )
         return Response(serializer.data)
