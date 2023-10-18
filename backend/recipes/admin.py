@@ -6,9 +6,6 @@ from recipes.models import (Ingredient, Tag, Recipe,
                             RecipeEssentials, Favorite, ShoppingCart)
 
 
-
-
-
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     """

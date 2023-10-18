@@ -246,9 +246,7 @@ class DownloadShoppingCart(APIView):
     """
     @staticmethod
     def get(request) -> HttpResponse:
-        user = request.user
-        shopping_list = generate_shopping_list_pdf(user)
-        return shopping_list
+        return generate_shopping_list_pdf(request.user)
 
 
 class IngredientsAPIView(ListAPIView):

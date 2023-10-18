@@ -104,6 +104,16 @@ class CustomUserViewSet(UserViewSet):
 
     @subscribe.mapping.delete
     def delete_subscription(self, request, **kwargs):
+        """
+        Удаление подписки на другого пользователя.
+
+        Args:
+            request (Request): Запрос.
+            kwargs: Параметры запроса, включая ID целевого пользователя.
+
+        Returns:
+            Response: Статус операции.
+        """
         target_user = get_object_or_404(User, id=self.kwargs.get('id'))
         get_object_or_404(Subscription,
                           subscriber=request.user,

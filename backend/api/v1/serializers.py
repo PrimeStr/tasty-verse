@@ -1,15 +1,15 @@
-from typing import List, Dict
+from typing import Dict, List
 
 from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import SerializerMethodField, IntegerField
+from rest_framework.fields import IntegerField, SerializerMethodField
 from rest_framework.relations import PrimaryKeyRelatedField
 
 from core.constants.recipes import MIN_INGREDIENT_AMOUNT
-from recipes.models import (Tag, Recipe, Favorite, ShoppingCart,
-                            Ingredient, RecipeEssentials)
+from recipes.models import (Favorite, Ingredient, Recipe,
+                            RecipeEssentials, ShoppingCart, Tag)
 from users.serializers import UserSerializer
 
 
