@@ -14,9 +14,11 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(' ')
 
-DB_ENGINE = os.getenv('DB_ENGINE', 'sqlite3')
+DB_ENGINE = 'sqlite3' if os.getenv('DEBUG', 'True') == 'True' else 'postgresql'
 
-if DEBUG:
+IS_LOGGING = os.getenv('IS_LOGGING', 'False') == 'True'
+
+if IS_LOGGING:
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -125,7 +127,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = '/static/'
+STATIC_URL = '/backend_static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'backend_static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

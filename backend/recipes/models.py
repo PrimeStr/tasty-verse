@@ -162,7 +162,6 @@ class Recipe(models.Model):
     )
     image = models.ImageField(
         verbose_name='Изображение',
-        upload_to='recipes/images/'
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',

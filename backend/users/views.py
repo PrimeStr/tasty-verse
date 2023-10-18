@@ -98,10 +98,9 @@ class CustomUserViewSet(UserViewSet):
                 'request': request
             }
         )
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
     def delete_subscription(self, request, **kwargs):
@@ -143,7 +142,8 @@ class UserSubscriptionsView(APIView):
         - get(request): Получение списка подписок текущего пользователя.
     """
 
-    def get(self, request):
+    @staticmethod
+    def get(request):
         queryset = User.objects.filter(subscriber__subscriber=request.user)
         serializer = UserSubscriptionListSerializer(
             queryset, many=True,

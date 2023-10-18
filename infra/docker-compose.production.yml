@@ -19,9 +19,7 @@ services:
     depends_on:
       - db
     restart: always
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: primestr/foodgram_backend
     env_file: .env
     volumes:
       - static:/app/backend_static/
@@ -30,24 +28,20 @@ services:
   frontend:
     container_name: foodgram-frontend
     depends_on:
-    - backend
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+      - backend
+    image: primestr/foodgram_frontend
     command: cp -r /app/build/. /static/
     volumes:
-      - ../frontend/:/app/result_build/
+      - static:/app/result_build/
 
   nginx:
     container_name: foodgram-nginx
-    build:
-      context: ../nginx/local
-      dockerfile: Dockerfile
+    depends_on:
+      - frontend
     restart: always
+    image: primestr/foodgram_nginx
     volumes:
       - static:/app/static/
       - media:/app/media/
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
     ports:
-      - "80:80"
+      - "8500:80"

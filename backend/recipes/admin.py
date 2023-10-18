@@ -6,6 +6,9 @@ from recipes.models import (Ingredient, Tag, Recipe,
                             RecipeEssentials, Favorite, ShoppingCart)
 
 
+
+
+
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     """
@@ -114,6 +117,7 @@ class IngredientResource(resources.ModelResource):
         model = Ingredient
 
 
+@admin.register(Ingredient)
 class IngredientAdmin(ImportExportModelAdmin):
     """
     Настроенная админ-панель Ингредиентов.
@@ -139,7 +143,7 @@ class IngredientAdmin(ImportExportModelAdmin):
         'measurement_unit',
     )
     search_fields = ('name', 'measurement_unit')
-    list_filter = ('id', 'name', 'measurement_unit')
+    list_filter = ('name', 'measurement_unit')
 
 
 @admin.register(Favorite)

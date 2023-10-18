@@ -63,7 +63,7 @@ class Command(BaseCommand):
         with open(file, 'r', newline='', encoding='utf-8') as csv_file:
             reader = csv.reader(csv_file)
             for row in reader:
-                name, measurement_unit = row[0], row[1]
+                name, measurement_unit = row
                 ingredient = Ingredient(name=name,
                                         measurement_unit=measurement_unit)
                 ingredients_to_create.append(ingredient)
