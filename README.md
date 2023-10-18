@@ -2,6 +2,9 @@
 # Foodgram - Вдохновляйтесь и делитесь вкусными блюдами со всем миром!
 
 ***
+
+#### Ссылка на проект: primestr.sytes.net
+
 ***
 
 # Русская версия
@@ -338,6 +341,9 @@ sudo certbot renew --dry-run
 # Foodgram - Get inspired and share delicious dishes with the whole world!
 
 ***
+
+#### Project link: primestr.sytes.net
+
 ***
 
 # English version
