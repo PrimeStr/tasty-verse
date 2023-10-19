@@ -29,8 +29,6 @@ services:
 
   frontend:
     container_name: foodgram-frontend
-    depends_on:
-    - backend
     build:
       context: ../frontend
       dockerfile: Dockerfile
@@ -40,6 +38,9 @@ services:
 
   nginx:
     container_name: foodgram-nginx
+    depends_on:
+      - backend
+      - frontend
     build:
       context: ../nginx/local
       dockerfile: Dockerfile

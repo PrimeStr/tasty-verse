@@ -3,7 +3,7 @@
 
 ***
 
-#### Ссылка на проект: primestr.sytes.net
+Ссылка на проект: [Foodgram](https://primestr.sytes.net)
 
 ***
 
@@ -342,7 +342,7 @@ sudo certbot renew --dry-run
 
 ***
 
-#### Project link: primestr.sytes.net
+Project link: [Foodgram](https://primestr.sytes.net)
 
 ***
 
