@@ -1,9 +1,9 @@
 
-# Foodgram - Вдохновляйтесь и делитесь вкусными блюдами со всем миром!
+# TastyVerse - Вдохновляйтесь и делитесь вкусными блюдами со всем миром!
 
 ***
 
-Ссылка на проект: [Foodgram](https://primestr.sytes.net)
+Ссылка на проект: [TastyVerse](https://primestr.sytes.net)
 
 ***
 
@@ -31,7 +31,7 @@ Looking for English version? Check here --> [click](#english-version) or scroll 
 
 ## Функционал:
 
-Foodgram предоставляет следующие возможности:
+TastyVerse предоставляет следующие возможности:
 
 - Добавление и редактирование рецептов: Создайте красиво оформленные рецепты, добавляйте фотографии ваших блюд и расскажите другим, как приготовить их шаг за шагом.
 
@@ -64,14 +64,14 @@ Foodgram предоставляет следующие возможности:
 Склонируйте проект из репозитория:
 
 ```shell
-git clone https://github.com/PrimeStr/foodgram-project-react.git
+git clone https://github.com/PrimeStr/tasty-verse.git
 ```
 
 
 Перейдите в директорию проекта:
 
 ```shell
-cd foodgram-project-react/
+cd tasty-verse/
 ```
 
 Перейдите в директорию **infra** и создайте файл **.env**:
@@ -125,13 +125,13 @@ sudo docker compose -f docker-compose.yml up
 Выполните миграции в контейнере с backend:
 
 ```shell
-sudo docker compose -f docker-compose.yml exec foodgram-backend python manage.py migrate
+sudo docker compose -f docker-compose.yml exec tastyverse-backend python manage.py migrate
 ```
 
 Соберите статику backend'a:
 
 ```shell
-sudo docker compose -f docker-compose.yml exec foodgram-backend python manage.py collectstatic
+sudo docker compose -f docker-compose.yml exec tastyverse-backend python manage.py collectstatic
 ```
 
 По завершении всех операции проект будет запущен и доступен по адресу
@@ -223,16 +223,16 @@ ALLOWED_HOSTS=127.0.0.1              # Список адресов, раздел
 
 В локальном проекте замените в файле **docker-compose.production.yml** названия
 образов в соответствии с вашим логином на DockerHub в нижнем регистре
-(Например **your_name/foodgram_backend**)
+(Например **your_name/tastyverse_backend**)
 
 Аналогично измените названия образов и в файле **main.yml**, который находится
 в директории **/.github/workflows/**.
 
 Подключитесь к вашему удалённому серверу любым удобным способом. Создайте в
-домашней директории директорию с названием **foodgram** и перейдите в неё.
+домашней директории директорию с названием **tastyverse** и перейдите в неё.
 
 ```shell
-mkdir foodgram
+mkdir tastyverse
 ```
 
 Готово.
@@ -256,12 +256,12 @@ git push
 вкладку **Actions**. Вы увидите процесс работы Actions. После окончания работы
 воркера в ваш Telegram придёт сообщение от бота:
 
-> Деплой проекта Foodgram успешно выполнен!
+> Деплой проекта TastyVerse успешно выполнен!
 
 **Данное сообщение означает что проект успешно запущен на сервере, проведены 
 миграции и собрана статика backend'а.**
 
-После этого можно вернуться на удалённый сервер, в директорию **foodgram** и
+После этого можно вернуться на удалённый сервер, в директорию **tastyverse** и
 создать суперпользователя: 
 
 ```shell
@@ -338,11 +338,11 @@ sudo certbot renew --dry-run
 ***
 ***
 
-# Foodgram - Get inspired and share delicious dishes with the whole world!
+# TastyVerse - Get inspired and share delicious dishes with the whole world!
 
 ***
 
-Project link: [Foodgram](https://primestr.sytes.net)
+Project link: [TastyVerse](https://primestr.sytes.net)
 
 ***
 
@@ -370,7 +370,7 @@ Project link: [Foodgram](https://primestr.sytes.net)
 
 ## Functionality:
 
-Foodgram provides the following features:
+TastyVerse provides the following features:
 
 - **Adding and editing recipes**: Create beautifully designed recipes, add 
 photos of your dishes and tell others how to cook it step by step.
@@ -413,14 +413,14 @@ Detailed launch instructions can be found below.
 Clone the project from the repository:
 
 ```shell
-git clone https://github.com/PrimeStr/foodgram-project-react.git
+git clone https://github.com/PrimeStr/tastyverse-project-react.git
 ```
 
 
 Go to the project directory:
 
 ```shell
-cd foodgram-project-react/
+cd tastyverse-project-react/
 ```
 
 Go to the **infra** directory and create the **.env** file:
@@ -476,13 +476,13 @@ separate Docker containers.
 Perform migrations in a container with a backend:
 
 ```shell
-sudo docker compose -f docker-compose.yml exec foodgram-backend python manage.py migrate
+sudo docker compose -f docker-compose.yml exec tastyverse-backend python manage.py migrate
 ```
 
 Collect backend static:
 
 ```shell
-sudo docker compose -f docker-compose.yml exec foodgram-backend python manage.py collectstatic
+sudo docker compose -f docker-compose.yml exec tastyverse-backend python manage.py collectstatic
 ```
 
 Upon completion of all operations, the project will be launched and available 
@@ -575,16 +575,16 @@ ALLOWED_HOSTS=127.0.0.1              # A list of addresses separated by spaces
 
 In the local project, replace the image names in the 
 **docker-compose.production.yml** file in accordance with your login to 
-DockerHub in lowercase (For example **your_name/foodgram_backend**)
+DockerHub in lowercase (For example **your_name/tastyverse_backend**)
 
 Similarly, change the names of the images in the **main.yml** file, which 
 is located in the **/.github/workflows/** directory.
 
 Connect to your remote server in any convenient way. Create a directory in
-your home directory with the name **foodgram** and go to it.
+your home directory with the name **tastyverse** and go to it.
 
 ```shell
-mkdir foodgram
+mkdir tastyverse
 ```
 
 Done.
@@ -609,12 +609,12 @@ After successfully submitting the changes, go to the **Actions** tab in
 your GitHub repository. You will see the Actions process. After the end of
 the worker's work, a message from the bot will come to your Telegram:
 
-> Деплой проекта Foodgram успешно выполнен!
+> Деплой проекта TastyVerse успешно выполнен!
 
 **This message means that the project has been successfully launched on the 
 server, migrations have been performed and backend static has been collected.**
 
-After that, you can return to the remote server, to the **foodgram** directory 
+After that, you can return to the remote server, to the **tastyverse** directory 
 and create a superuser:
 
 ```shell
